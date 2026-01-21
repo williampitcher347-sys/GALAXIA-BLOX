@@ -15,26 +15,29 @@
       height: 100vh;
     }
 
-    /* SIDEBAR */
+    /* SIDEBAR LEFT: TOOLS + OBJECTS */
     #sidebar {
-      width: 220px;
+      width: 260px;
       background: linear-gradient(180deg, #001, #000);
       border-right: 2px solid #0af;
       padding: 15px;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
 
     #sidebar h2 {
-      margin-top: 0;
+      margin: 0;
       color: #0af;
       text-align: center;
-      font-size: 22px;
+      font-size: 20px;
     }
 
     .tool-btn {
       width: 100%;
-      padding: 10px;
-      margin: 8px 0;
+      padding: 8px;
+      margin-top: 6px;
       background: #0af;
       color: #000;
       border: none;
@@ -42,10 +45,39 @@
       font-weight: bold;
       border-radius: 5px;
       transition: 0.2s;
+      font-size: 14px;
     }
 
     .tool-btn:hover {
       background: #08c;
+    }
+
+    .tool-btn.active {
+      background: #fff;
+      color: #000;
+    }
+
+    #objectList {
+      flex: 1;
+      border: 1px solid #0af;
+      padding: 8px;
+      overflow-y: auto;
+      background: rgba(0, 0, 40, 0.7);
+      font-size: 13px;
+    }
+
+    .object-item {
+      padding: 5px 6px;
+      margin-bottom: 4px;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #012;
+      border: 1px solid #0af;
+    }
+
+    .object-item.selected {
+      background: #0af;
+      color: #000;
     }
 
     /* MAIN AREA */
@@ -63,9 +95,15 @@
       display: flex;
       align-items: center;
       padding: 0 20px;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: bold;
       letter-spacing: 1px;
+      justify-content: space-between;
+    }
+
+    #topbar span {
+      opacity: 0.8;
+      font-size: 13px;
     }
 
     /* CANVAS AREA */
@@ -81,11 +119,12 @@
       background: #111;
       border: 2px solid #0af;
       box-shadow: 0 0 20px #0af;
+      cursor: crosshair;
     }
 
     /* PROPERTIES PANEL */
     #properties {
-      width: 250px;
+      width: 260px;
       background: #000;
       border-left: 2px solid #0af;
       padding: 15px;
@@ -96,20 +135,29 @@
       margin-top: 0;
       text-align: center;
       color: #0af;
+      font-size: 20px;
     }
 
     .prop-label {
       margin-top: 10px;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .prop-input {
       width: 100%;
-      padding: 8px;
+      padding: 6px;
       background: #001;
       border: 1px solid #0af;
       color: #0af;
-      margin-top: 5px;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+
+    #noSelection {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-top: 10px;
+      text-align: center;
     }
   </style>
 </head>
@@ -118,19 +166,31 @@
 
   <!-- SIDEBAR -->
   <div id="sidebar">
-    <h2>Tools</h2>
-    <button class="tool-btn">Select</button>
-    <button class="tool-btn">Move</button>
-    <button class="tool-btn">Add Object</button>
-    <button class="tool-btn">Delete</button>
-    <button class="tool-btn">Play</button>
+    <div>
+      <h2>Tools</h2>
+      <button class="tool-btn active" id="toolSelect">Select / Drag</button>
+      <button class="tool-btn" id="toolAdd">Add Object</button>
+      <button class="tool-btn" id="toolDelete">Delete Selected</button>
+      <button class="tool-btn" id="toolPlay">Play</button>
+      <button class="tool-btn" id="toolStop">Stop</button>
+      <button class="tool-btn" id="toolSave">Save</button>
+      <button class="tool-btn" id="toolLoad">Load</button>
+    </div>
+
+    <div>
+      <h2>Objects</h2>
+      <div id="objectList"></div>
+    </div>
   </div>
 
   <!-- MAIN AREA -->
   <div id="main">
 
     <!-- TOP BAR -->
-    <div id="topbar">Galaxia Game Creator</div>
+    <div id="topbar">
+      <div>Galaxia Game Creator</div>
+      <span>Arrow keys move in Play mode • Drag in Select mode</span>
+    </div>
 
     <!-- CANVAS AREA -->
     <div id="canvasArea">
@@ -143,71 +203,292 @@
   <div id="properties">
     <h2>Properties</h2>
 
-    <div class="prop-label">X Position</div>
-    <input class="prop-input" id="propX" type="number">
+    <div id="noSelection">No object selected</div>
 
-    <div class="prop-label">Y Position</div>
-    <input class="prop-input" id="propY" type="number">
+    <div id="propPanel" style="display:none;">
+      <div class="prop-label">Name</div>
+      <input class="prop-input" id="propName" type="text">
 
-    <div class="prop-label">Size</div>
-    <input class="prop-input" id="propSize" type="number">
+      <div class="prop-label">X Position</div>
+      <input class="prop-input" id="propX" type="number">
 
-    <div class="prop-label">Speed</div>
-    <input class="prop-input" id="propSpeed" type="number">
+      <div class="prop-label">Y Position</div>
+      <input class="prop-input" id="propY" type="number">
+
+      <div class="prop-label">Size</div>
+      <input class="prop-input" id="propSize" type="number">
+
+      <div class="prop-label">Speed</div>
+      <input class="prop-input" id="propSpeed" type="number">
+
+      <div class="prop-label">Color</div>
+      <input class="prop-input" id="propColor" type="text" placeholder="#0af">
+    </div>
   </div>
 
   <script src="script.js"></script>
   <script>const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// Player object
-const player = {
-  x: 100,
-  y: 100,
-  size: 40,
-  speed: 4
-};
+// UI elements
+const toolSelect = document.getElementById("toolSelect");
+const toolAdd = document.getElementById("toolAdd");
+const toolDelete = document.getElementById("toolDelete");
+const toolPlay = document.getElementById("toolPlay");
+const toolStop = document.getElementById("toolStop");
+const toolSave = document.getElementById("toolSave");
+const toolLoad = document.getElementById("toolLoad");
+const objectList = document.getElementById("objectList");
 
-// Property panel elements
+const noSelection = document.getElementById("noSelection");
+const propPanel = document.getElementById("propPanel");
+const propName = document.getElementById("propName");
 const propX = document.getElementById("propX");
 const propY = document.getElementById("propY");
 const propSize = document.getElementById("propSize");
 const propSpeed = document.getElementById("propSpeed");
+const propColor = document.getElementById("propColor");
 
-// Load initial values
-function loadProperties() {
-  propX.value = player.x;
-  propY.value = player.y;
-  propSize.value = player.size;
-  propSpeed.value = player.speed;
-}
+// State
+let objects = [];
+let selectedId = null;
+let currentTool = "select";
+let playMode = false;
 
-loadProperties();
+// Dragging
+let isDragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
 
-// Update player when properties change
-propX.oninput = () => player.x = Number(propX.value);
-propY.oninput = () => player.y = Number(propY.value);
-propSize.oninput = () => player.size = Number(propSize.value);
-propSpeed.oninput = () => player.speed = Number(propSpeed.value);
-
-// Keyboard input
+// Keyboard
 const keys = {};
 document.addEventListener("keydown", e => keys[e.key] = true);
 document.addEventListener("keyup", e => keys[e.key] = false);
 
+// Tool button helpers
+function setTool(tool) {
+  currentTool = tool;
+  [toolSelect, toolAdd, toolDelete, toolPlay, toolStop].forEach(btn => btn.classList.remove("active"));
+  if (tool === "select") toolSelect.classList.add("active");
+  if (tool === "add") toolAdd.classList.add("active");
+}
+
+toolSelect.onclick = () => setTool("select");
+toolAdd.onclick = () => setTool("add");
+
+toolDelete.onclick = () => {
+  if (selectedId == null) return;
+  objects = objects.filter(o => o.id !== selectedId);
+  selectedId = null;
+  refreshObjectList();
+  updatePropertiesPanel();
+};
+
+toolPlay.onclick = () => {
+  playMode = true;
+};
+
+toolStop.onclick = () => {
+  playMode = false;
+};
+
+toolSave.onclick = () => {
+  localStorage.setItem("galaxia_objects", JSON.stringify(objects));
+  alert("Scene saved.");
+};
+
+toolLoad.onclick = () => {
+  const data = localStorage.getItem("galaxia_objects");
+  if (!data) {
+    alert("No saved scene found.");
+    return;
+  }
+  objects = JSON.parse(data);
+  selectedId = null;
+  refreshObjectList();
+  updatePropertiesPanel();
+};
+
+// Object creation
+let nextId = 1;
+
+function addObject(x, y) {
+  const obj = {
+    id: nextId++,
+    name: "Object " + (objects.length + 1),
+    x,
+    y,
+    size: 40,
+    speed: 4,
+    color: "#0af"
+  };
+  objects.push(obj);
+  refreshObjectList();
+  selectObject(obj.id);
+}
+
+// Object list UI
+function refreshObjectList() {
+  objectList.innerHTML = "";
+  objects.forEach(obj => {
+    const div = document.createElement("div");
+    div.className = "object-item" + (obj.id === selectedId ? " selected" : "");
+    div.textContent = obj.name;
+    div.onclick = () => selectObject(obj.id);
+    objectList.appendChild(div);
+  });
+}
+
+function selectObject(id) {
+  selectedId = id;
+  refreshObjectList();
+  updatePropertiesPanel();
+}
+
+// Properties panel
+function updatePropertiesPanel() {
+  const obj = objects.find(o => o.id === selectedId);
+  if (!obj) {
+    noSelection.style.display = "block";
+    propPanel.style.display = "none";
+    return;
+  }
+
+  noSelection.style.display = "none";
+  propPanel.style.display = "block";
+
+  propName.value = obj.name;
+  propX.value = obj.x;
+  propY.value = obj.y;
+  propSize.value = obj.size;
+  propSpeed.value = obj.speed;
+  propColor.value = obj.color;
+}
+
+propName.oninput = () => {
+  const obj = objects.find(o => o.id === selectedId);
+  if (!obj) return;
+  obj.name = propName.value;
+  refreshObjectList();
+};
+
+propX.oninput = () => {
+  const obj = objects.find(o => o.id === selectedId);
+  if (!obj) return;
+  obj.x = Number(propX.value);
+};
+
+propY.oninput = () => {
+  const obj = objects.find(o => o.id === selectedId);
+  if (!obj) return;
+  obj.y = Number(propY.value);
+};
+
+propSize.oninput = () => {
+  const obj = objects.find(o => o.id === selectedId);
+  if (!obj) return;
+  obj.size = Number(propSize.value);
+};
+
+propSpeed.oninput = () => {
+  const obj = objects.find(o => o.id === selectedId);
+  if (!obj) return;
+  obj.speed = Number(propSpeed.value);
+};
+
+propColor.oninput = () => {
+  const obj = objects.find(o => o.id === selectedId);
+  if (!obj) return;
+  obj.color = propColor.value || "#0af";
+};
+
+// Canvas helpers
+function getObjectAt(x, y) {
+  for (let i = objects.length - 1; i >= 0; i--) {
+    const o = objects[i];
+    if (x >= o.x && x <= o.x + o.size && y >= o.y && y <= o.y + o.size) {
+      return o;
+    }
+  }
+  return null;
+}
+
+// Mouse events
+canvas.addEventListener("mousedown", e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  if (currentTool === "add") {
+    addObject(x - 20, y - 20);
+    return;
+  }
+
+  if (currentTool === "select") {
+    const obj = getObjectAt(x, y);
+    if (obj) {
+      selectObject(obj.id);
+      isDragging = true;
+      dragOffsetX = x - obj.x;
+      dragOffsetY = y - obj.y;
+    } else {
+      selectedId = null;
+      refreshObjectList();
+      updatePropertiesPanel();
+    }
+  }
+});
+
+canvas.addEventListener("mousemove", e => {
+  if (!isDragging) return;
+  const obj = objects.find(o => o.id === selectedId);
+  if (!obj) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  obj.x = x - dragOffsetX;
+  obj.y = y - dragOffsetY;
+
+  updatePropertiesPanel();
+});
+
+canvas.addEventListener("mouseup", () => {
+  isDragging = false;
+});
+
+canvas.addEventListener("mouseleave", () => {
+  isDragging = false;
+});
+
 // Game loop
 function update() {
-  if (keys["ArrowUp"]) player.y -= player.speed;
-  if (keys["ArrowDown"]) player.y += player.speed;
-  if (keys["ArrowLeft"]) player.x -= player.speed;
-  if (keys["ArrowRight"]) player.x += player.speed;
+  if (playMode) {
+    const obj = objects.find(o => o.id === selectedId);
+    if (obj) {
+      if (keys["ArrowUp"]) obj.y -= obj.speed;
+      if (keys["ArrowDown"]) obj.y += obj.speed;
+      if (keys["ArrowLeft"]) obj.x -= obj.speed;
+      if (keys["ArrowRight"]) obj.x += obj.speed;
+      updatePropertiesPanel();
+    }
+  }
 }
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = "#0af";
-  ctx.fillRect(player.x, player.y, player.size, player.size);
+  objects.forEach(obj => {
+    ctx.fillStyle = obj.color;
+    ctx.fillRect(obj.x, obj.y, obj.size, obj.size);
+
+    if (obj.id === selectedId) {
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(obj.x - 2, obj.y - 2, obj.size + 4, obj.size + 4);
+    }
+  });
 }
 
 function gameLoop() {
