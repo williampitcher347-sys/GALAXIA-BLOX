@@ -1,218 +1,176 @@
-// ===============================
-// BLOCK DEFINITIONS
-// ===============================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Galaxia Blox 2D Engine</title>
 
-const BLOCKS = {
-  movement: [
-    "move 10 steps",
-    "turn right 15°",
-    "turn left 15°",
-    "go to x:0 y:0",
-    "glide 1s to x:100 y:100",
-    "change x by 10",
-    "change y by 10",
-    "set x to 0",
-    "set y to 0",
-    "point in direction 90"
-  ],
-
-  looks: [
-    "say Hello",
-    "say Hello for 2s",
-    "think Hmm",
-    "change color",
-    "set size to 100%",
-    "hide",
-    "show",
-    "switch costume",
-    "change ghost effect",
-    "clear effects"
-  ],
-
-  events: [
-    "when green flag clicked",
-    "when sprite clicked",
-    "when key pressed",
-    "when backdrop switches",
-    "when timer > 5",
-    "when touching edge",
-    "when touching sprite",
-    "broadcast message",
-    "when I receive message",
-    "when stage clicked"
-  ],
-
-  control: [
-    "repeat 10",
-    "forever",
-    "wait 1 second",
-    "if condition",
-    "if else",
-    "stop all",
-    "stop script",
-    "repeat until",
-    "wait until",
-    "create clone"
-  ],
-
-  sensing: [
-    "touching mouse?",
-    "touching color?",
-    "mouse x",
-    "mouse y",
-    "key pressed?",
-    "distance to sprite",
-    "ask and wait",
-    "answer",
-    "loudness",
-    "timer"
-  ],
-
-  operators: [
-    "pick random 1 to 10",
-    "join text",
-    "letter of text",
-    "length of text",
-    "mod",
-    "round",
-    "+",
-    "-",
-    "*",
-    "/"
-  ],
-
-  variables: [
-    "set variable",
-    "change variable",
-    "show variable",
-    "hide variable",
-    "add to list",
-    "delete from list",
-    "replace item",
-    "insert item",
-    "length of list",
-    "item of list"
-  ],
-
-  map: [
-    "set tile",
-    "get tile",
-    "load map",
-    "save map",
-    "fill area",
-    "spawn enemy",
-    "spawn item",
-    "set spawn point",
-    "set camera",
-    "scroll map"
-  ],
-
-  custom: [
-    "define function",
-    "call function",
-    "create event",
-    "emit event",
-    "custom block 1",
-    "custom block 2",
-    "custom block 3",
-    "custom block 4",
-    "custom block 5",
-    "custom block 6"
-  ],
-
-  advanced: [
-    "run JS code",
-    "log to console",
-    "set physics",
-    "apply force",
-    "set gravity",
-    "spawn particle",
-    "play sound",
-    "load sprite",
-    "save project",
-    "load project"
-  ]
-};
-
-// ===============================
-// UI ELEMENTS
-// ===============================
-
-const palette = document.getElementById("palette");
-const scriptArea = document.getElementById("scriptArea");
-
-// ===============================
-// CATEGORY SWITCHING
-// ===============================
-
-document.querySelectorAll(".cat-btn").forEach(btn => {
-  btn.onclick = () => {
-    const cat = btn.dataset.cat;
-    loadCategory(cat);
-  };
-});
-
-function loadCategory(cat) {
-  palette.innerHTML = "";
-  BLOCKS[cat].forEach(text => {
-    const block = document.createElement("div");
-    block.className = "block";
-    block.textContent = text;
-    block.draggable = true;
-    block.ondragstart = dragStart;
-    palette.appendChild(block);
-  });
-}
-
-loadCategory("movement");
-
-// ===============================
-// DRAGGING + SCRIPT AREA
-// ===============================
-
-let dragData = null;
-
-function dragStart(e) {
-  dragData = {
-    text: e.target.textContent
-  };
-}
-
-scriptArea.addEventListener("dragover", e => e.preventDefault());
-
-scriptArea.addEventListener("drop", e => {
-  const block = document.createElement("div");
-  block.className = "script-block";
-  block.textContent = dragData.text;
-  block.style.left = e.offsetX + "px";
-  block.style.top = e.offsetY + "px";
-
-  makeDraggable(block);
-  scriptArea.appendChild(block);
-});
-
-// ===============================
-// MAKE SCRIPT BLOCKS DRAGGABLE
-// ===============================
-
-function makeDraggable(el) {
-  let offsetX, offsetY;
-
-  el.onmousedown = e => {
-    offsetX = e.offsetX;
-    offsetY = e.offsetY;
-
-    function move(ev) {
-      el.style.left = ev.pageX - scriptArea.offsetLeft - offsetX + "px";
-      el.style.top = ev.pageY - scriptArea.offsetTop - offsetY + "px";
+  <style>
+    body {
+      margin: 0;
+      background: #05060a;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
     }
 
-    function up() {
-      document.removeEventListener("mousemove", move);
-      document.removeEventListener("mouseup", up);
+    /* LEFT CATEGORY BAR */
+    #categories {
+      width: 140px;
+      background: #0b0c10;
+      border-right: 2px solid #0af;
+      padding: 10px;
+      box-sizing: border-box;
     }
 
-    document.addEventListener("mousemove", move);
-    document.addEventListener("mouseup", up);
-  };
-}
+    .cat-btn {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 8px;
+      background: #0af;
+      color: #000;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 5px;
+      font-size: 13px;
+    }
+
+    .cat-btn:hover {
+      background: #08c;
+    }
+
+    /* BLOCK PALETTE */
+    #palette {
+      width: 260px;
+      background: #151515;
+      border-right: 2px solid #0af;
+      padding: 10px;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+
+    .block {
+      padding: 8px 10px;
+      background: #ffbf00;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: grab;
+      user-select: none;
+      font-weight: bold;
+      font-size: 12px;
+    }
+
+    /* SCRIPT AREA */
+    #scriptArea {
+      flex: 1;
+      background: #202020;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .script-block {
+      position: absolute;
+      padding: 8px 10px;
+      background: #ffbf00;
+      border-radius: 6px;
+      cursor: grab;
+      user-select: none;
+      font-weight: bold;
+      font-size: 12px;
+      min-width: 140px;
+    }
+
+    .script-block.event {
+      background: #ff7f50;
+    }
+
+    .script-block.control {
+      background: #ff6ad5;
+    }
+
+    /* STAGE + CONTROLS */
+    #topBar {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      z-index: 10;
+    }
+
+    #greenFlag {
+      width: 30px;
+      height: 30px;
+      background: #0f0;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      cursor: pointer;
+    }
+
+    #stopBtn {
+      width: 30px;
+      height: 30px;
+      background: #f00;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      cursor: pointer;
+    }
+
+    #stage {
+      width: 360px;
+      height: 260px;
+      background: #000;
+      border: 2px solid #0af;
+      position: absolute;
+      top: 45px;
+      right: 10px;
+    }
+
+    #spriteInfo {
+      position: absolute;
+      right: 10px;
+      top: 315px;
+      font-size: 12px;
+      background: rgba(0,0,0,0.6);
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid #0af;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LEFT CATEGORY BAR -->
+  <div id="categories">
+    <button class="cat-btn" data-cat="movement">Movement</button>
+    <button class="cat-btn" data-cat="looks">Looks</button>
+    <button class="cat-btn" data-cat="events">Events</button>
+    <button class="cat-btn" data-cat="control">Control</button>
+    <button class="cat-btn" data-cat="sensing">Sensing</button>
+    <button class="cat-btn" data-cat="operators">Operators</button>
+    <button class="cat-btn" data-cat="variables">Variables</button>
+    <button class="cat-btn" data-cat="map">Map</button>
+    <button class="cat-btn" data-cat="custom">Custom</button>
+    <button class="cat-btn" data-cat="advanced">Advanced</button>
+  </div>
+
+  <!-- BLOCK PALETTE -->
+  <div id="palette"></div>
+
+  <!-- SCRIPT AREA + STAGE -->
+  <div id="scriptArea">
+    <div id="topBar">
+      <div id="greenFlag" title="Start"></div>
+      <div id="stopBtn" title="Stop"></div>
+    </div>
+    <canvas id="stage"></canvas>
+    <div id="spriteInfo">Sprite: x=0 y=0</div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
