@@ -1,294 +1,218 @@
-/*  
-   GALAXIA 3D GAME CREATOR – ADVANCED ENGINE  
-   Features added:
-   - Walls + collision
-   - Floors
-   - Triggers
-   - Event system (onTouch, onClick, onStart)
-   - Player controller with collision
-   - Object behaviors
-*/
+// ===============================
+// BLOCK DEFINITIONS
+// ===============================
 
-//////////////////////////////////////////////////////
-// BASIC THREE.JS SETUP
-//////////////////////////////////////////////////////
+const BLOCKS = {
+  movement: [
+    "move 10 steps",
+    "turn right 15°",
+    "turn left 15°",
+    "go to x:0 y:0",
+    "glide 1s to x:100 y:100",
+    "change x by 10",
+    "change y by 10",
+    "set x to 0",
+    "set y to 0",
+    "point in direction 90"
+  ],
 
-const container = document.getElementById("threeContainer");
+  looks: [
+    "say Hello",
+    "say Hello for 2s",
+    "think Hmm",
+    "change color",
+    "set size to 100%",
+    "hide",
+    "show",
+    "switch costume",
+    "change ghost effect",
+    "clear effects"
+  ],
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000000);
+  events: [
+    "when green flag clicked",
+    "when sprite clicked",
+    "when key pressed",
+    "when backdrop switches",
+    "when timer > 5",
+    "when touching edge",
+    "when touching sprite",
+    "broadcast message",
+    "when I receive message",
+    "when stage clicked"
+  ],
 
-const camera = new THREE.PerspectiveCamera(
-  60,
-  container.clientWidth / container.clientHeight,
-  0.1,
-  2000
-);
-camera.position.set(8, 6, 10);
+  control: [
+    "repeat 10",
+    "forever",
+    "wait 1 second",
+    "if condition",
+    "if else",
+    "stop all",
+    "stop script",
+    "repeat until",
+    "wait until",
+    "create clone"
+  ],
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(container.clientWidth, container.clientHeight);
-container.appendChild(renderer.domElement);
+  sensing: [
+    "touching mouse?",
+    "touching color?",
+    "mouse x",
+    "mouse y",
+    "key pressed?",
+    "distance to sprite",
+    "ask and wait",
+    "answer",
+    "loudness",
+    "timer"
+  ],
 
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
+  operators: [
+    "pick random 1 to 10",
+    "join text",
+    "letter of text",
+    "length of text",
+    "mod",
+    "round",
+    "+",
+    "-",
+    "*",
+    "/"
+  ],
 
-const ambient = new THREE.AmbientLight(0xffffff, 0.6);
-scene.add(ambient);
+  variables: [
+    "set variable",
+    "change variable",
+    "show variable",
+    "hide variable",
+    "add to list",
+    "delete from list",
+    "replace item",
+    "insert item",
+    "length of list",
+    "item of list"
+  ],
 
-const dirLight = new THREE.DirectionalLight(0x00aaff, 1.2);
-dirLight.position.set(5, 10, 7);
-scene.add(dirLight);
+  map: [
+    "set tile",
+    "get tile",
+    "load map",
+    "save map",
+    "fill area",
+    "spawn enemy",
+    "spawn item",
+    "set spawn point",
+    "set camera",
+    "scroll map"
+  ],
 
-const grid = new THREE.GridHelper(40, 40, 0x0af, 0x033);
-scene.add(grid);
+  custom: [
+    "define function",
+    "call function",
+    "create event",
+    "emit event",
+    "custom block 1",
+    "custom block 2",
+    "custom block 3",
+    "custom block 4",
+    "custom block 5",
+    "custom block 6"
+  ],
 
-//////////////////////////////////////////////////////
-// ENGINE STATE
-//////////////////////////////////////////////////////
+  advanced: [
+    "run JS code",
+    "log to console",
+    "set physics",
+    "apply force",
+    "set gravity",
+    "spawn particle",
+    "play sound",
+    "load sprite",
+    "save project",
+    "load project"
+  ]
+};
 
-let objects = []; // {id, name, type, mesh, speed, events: []}
-let selectedId = null;
-let currentTool = "select";
-let playMode = false;
-let nextId = 1;
+// ===============================
+// UI ELEMENTS
+// ===============================
 
-const keys = {};
-document.addEventListener("keydown", e => keys[e.key] = true);
-document.addEventListener("keyup", e => keys[e.key] = false);
+const palette = document.getElementById("palette");
+const scriptArea = document.getElementById("scriptArea");
 
-//////////////////////////////////////////////////////
-// OBJECT CREATION HELPERS
-//////////////////////////////////////////////////////
+// ===============================
+// CATEGORY SWITCHING
+// ===============================
 
-function createMesh(type, color = 0x00aaff) {
-  let geom;
-
-  switch (type) {
-    case "cube":
-      geom = new THREE.BoxGeometry(1, 1, 1);
-      break;
-
-    case "sphere":
-      geom = new THREE.SphereGeometry(0.5, 24, 24);
-      break;
-
-    case "wall":
-      geom = new THREE.BoxGeometry(5, 3, 0.5);
-      break;
-
-    case "floor":
-      geom = new THREE.BoxGeometry(20, 0.5, 20);
-      break;
-
-    case "trigger":
-      geom = new THREE.BoxGeometry(2, 2, 2);
-      break;
-  }
-
-  const mat = new THREE.MeshStandardMaterial({
-    color,
-    metalness: 0.2,
-    roughness: 0.6,
-    transparent: type === "trigger",
-    opacity: type === "trigger" ? 0.25 : 1
-  });
-
-  const mesh = new THREE.Mesh(geom, mat);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-
-  return mesh;
-}
-
-function addObject(type) {
-  const mesh = createMesh(type);
-  mesh.position.set(0, 0.5, 0);
-  scene.add(mesh);
-
-  const obj = {
-    id: nextId++,
-    name: type.toUpperCase() + " " + nextId,
-    type,
-    mesh,
-    speed: 3,
-    events: [] // NEW: event list
+document.querySelectorAll(".cat-btn").forEach(btn => {
+  btn.onclick = () => {
+    const cat = btn.dataset.cat;
+    loadCategory(cat);
   };
-
-  objects.push(obj);
-  refreshObjectList();
-  selectObject(obj.id);
-}
-
-//////////////////////////////////////////////////////
-// EVENT SYSTEM
-//////////////////////////////////////////////////////
-
-/*
-   EVENT FORMAT:
-   {
-     trigger: "onTouch" | "onClick" | "onStart",
-     action: "move" | "rotate" | "teleport" | "delete" | "color",
-     params: {...}
-   }
-*/
-
-function runEvents(triggerType, colliderObj = null) {
-  objects.forEach(obj => {
-    obj.events.forEach(ev => {
-      if (ev.trigger !== triggerType) return;
-
-      // If onTouch, check collision
-      if (triggerType === "onTouch" && colliderObj) {
-        if (!checkCollision(obj.mesh, colliderObj.mesh)) return;
-      }
-
-      runAction(obj, ev);
-    });
-  });
-}
-
-function runAction(obj, ev) {
-  switch (ev.action) {
-    case "move":
-      obj.mesh.position.x += ev.params.x || 0;
-      obj.mesh.position.y += ev.params.y || 0;
-      obj.mesh.position.z += ev.params.z || 0;
-      break;
-
-    case "rotate":
-      obj.mesh.rotation.y += ev.params.y || 0;
-      break;
-
-    case "teleport":
-      obj.mesh.position.set(ev.params.x, ev.params.y, ev.params.z);
-      break;
-
-    case "delete":
-      scene.remove(obj.mesh);
-      objects = objects.filter(o => o.id !== obj.id);
-      break;
-
-    case "color":
-      obj.mesh.material.color.set(ev.params.color);
-      break;
-  }
-}
-
-//////////////////////////////////////////////////////
-// COLLISION SYSTEM
-//////////////////////////////////////////////////////
-
-function checkCollision(a, b) {
-  a.geometry.computeBoundingBox();
-  b.geometry.computeBoundingBox();
-
-  const boxA = a.geometry.boundingBox.clone();
-  const boxB = b.geometry.boundingBox.clone();
-
-  boxA.applyMatrix4(a.matrixWorld);
-  boxB.applyMatrix4(b.matrixWorld);
-
-  return boxA.intersectsBox(boxB);
-}
-
-//////////////////////////////////////////////////////
-// PLAYER CONTROLLER (in play mode)
-//////////////////////////////////////////////////////
-
-function updatePlayerMovement() {
-  const player = objects.find(o => o.type === "cube" && o.id === selectedId);
-  if (!player) return;
-
-  const speed = player.speed * 0.1;
-
-  const oldPos = player.mesh.position.clone();
-
-  if (keys["ArrowUp"]) player.mesh.position.z -= speed;
-  if (keys["ArrowDown"]) player.mesh.position.z += speed;
-  if (keys["ArrowLeft"]) player.mesh.position.x -= speed;
-  if (keys["ArrowRight"]) player.mesh.position.x += speed;
-
-  // Collision with walls
-  objects.forEach(o => {
-    if (o.type === "wall" || o.type === "floor") {
-      if (checkCollision(player.mesh, o.mesh)) {
-        player.mesh.position.copy(oldPos);
-      }
-    }
-  });
-
-  // Trigger events
-  objects.forEach(o => {
-    if (o.type === "trigger") {
-      if (checkCollision(player.mesh, o.mesh)) {
-        runEvents("onTouch", player);
-      }
-    }
-  });
-}
-
-//////////////////////////////////////////////////////
-// RAYCAST SELECTION
-//////////////////////////////////////////////////////
-
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-renderer.domElement.addEventListener("mousedown", e => {
-  if (currentTool !== "select") {
-    if (currentTool === "cube") addObject("cube");
-    if (currentTool === "sphere") addObject("sphere");
-    if (currentTool === "wall") addObject("wall");
-    if (currentTool === "floor") addObject("floor");
-    if (currentTool === "trigger") addObject("trigger");
-    return;
-  }
-
-  const rect = renderer.domElement.getBoundingClientRect();
-  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-
-  raycaster.setFromCamera(mouse, camera);
-  const meshes = objects.map(o => o.mesh);
-  const hits = raycaster.intersectObjects(meshes);
-
-  if (hits.length > 0) {
-    const hitMesh = hits[0].object;
-    const obj = objects.find(o => o.mesh === hitMesh);
-    if (obj) selectObject(obj.id);
-
-    // Click events
-    runEvents("onClick");
-  } else {
-    selectedId = null;
-    refreshObjectList();
-    updatePropertiesPanel();
-  }
 });
 
-//////////////////////////////////////////////////////
-// UI BINDINGS (same as before)
-//////////////////////////////////////////////////////
-
-// (Your existing UI code stays the same — selection, properties, save/load, etc.)
-
-//////////////////////////////////////////////////////
-// MAIN LOOP
-//////////////////////////////////////////////////////
-
-function update() {
-  controls.update();
-
-  if (playMode) {
-    updatePlayerMovement();
-  }
+function loadCategory(cat) {
+  palette.innerHTML = "";
+  BLOCKS[cat].forEach(text => {
+    const block = document.createElement("div");
+    block.className = "block";
+    block.textContent = text;
+    block.draggable = true;
+    block.ondragstart = dragStart;
+    palette.appendChild(block);
+  });
 }
 
-function animate() {
-  requestAnimationFrame(animate);
-  update();
-  renderer.render(scene, camera);
+loadCategory("movement");
+
+// ===============================
+// DRAGGING + SCRIPT AREA
+// ===============================
+
+let dragData = null;
+
+function dragStart(e) {
+  dragData = {
+    text: e.target.textContent
+  };
 }
 
-animate();
+scriptArea.addEventListener("dragover", e => e.preventDefault());
+
+scriptArea.addEventListener("drop", e => {
+  const block = document.createElement("div");
+  block.className = "script-block";
+  block.textContent = dragData.text;
+  block.style.left = e.offsetX + "px";
+  block.style.top = e.offsetY + "px";
+
+  makeDraggable(block);
+  scriptArea.appendChild(block);
+});
+
+// ===============================
+// MAKE SCRIPT BLOCKS DRAGGABLE
+// ===============================
+
+function makeDraggable(el) {
+  let offsetX, offsetY;
+
+  el.onmousedown = e => {
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+
+    function move(ev) {
+      el.style.left = ev.pageX - scriptArea.offsetLeft - offsetX + "px";
+      el.style.top = ev.pageY - scriptArea.offsetTop - offsetY + "px";
+    }
+
+    function up() {
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+    }
+
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+  };
+}
