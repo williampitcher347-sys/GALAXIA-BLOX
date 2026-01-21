@@ -157,5 +157,65 @@
   </div>
 
   <script src="script.js"></script>
+  <script>const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+// Player object
+const player = {
+  x: 100,
+  y: 100,
+  size: 40,
+  speed: 4
+};
+
+// Property panel elements
+const propX = document.getElementById("propX");
+const propY = document.getElementById("propY");
+const propSize = document.getElementById("propSize");
+const propSpeed = document.getElementById("propSpeed");
+
+// Load initial values
+function loadProperties() {
+  propX.value = player.x;
+  propY.value = player.y;
+  propSize.value = player.size;
+  propSpeed.value = player.speed;
+}
+
+loadProperties();
+
+// Update player when properties change
+propX.oninput = () => player.x = Number(propX.value);
+propY.oninput = () => player.y = Number(propY.value);
+propSize.oninput = () => player.size = Number(propSize.value);
+propSpeed.oninput = () => player.speed = Number(propSpeed.value);
+
+// Keyboard input
+const keys = {};
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+// Game loop
+function update() {
+  if (keys["ArrowUp"]) player.y -= player.speed;
+  if (keys["ArrowDown"]) player.y += player.speed;
+  if (keys["ArrowLeft"]) player.x -= player.speed;
+  if (keys["ArrowRight"]) player.x += player.speed;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#0af";
+  ctx.fillRect(player.x, player.y, player.size, player.size);
+}
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();</script>
 </body>
 </html>
