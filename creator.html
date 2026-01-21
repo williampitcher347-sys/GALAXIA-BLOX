@@ -1,539 +1,155 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>GALAXIA STUDIO // GAME CREATOR</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>Galaxia Studio Pro</title>
+
   <style>
-    :root {
-      --bg: #02030a;
-      --accent: #00e5ff;
-      --accent-soft: rgba(0, 229, 255, 0.2);
-      --accent-strong: rgba(0, 229, 255, 0.8);
-      --text-main: #e6f7ff;
-      --text-soft: #7f9bb5;
-      --panel-bg: rgba(5, 10, 30, 0.96);
-      --border: rgba(0, 229, 255, 0.4);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #04152b 0, #02030a 40%, #000000 100%);
-      color: var(--text-main);
+      background: #0a0a0a;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
       height: 100vh;
+    }
+
+    #leftPanel {
+      width: 40%;
+      background: #111;
+      padding: 20px;
       display: flex;
       flex-direction: column;
+      gap: 15px;
+      border-right: 2px solid #222;
     }
 
-    header {
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(
-        90deg,
-        rgba(0, 229, 255, 0.18),
-        rgba(0, 0, 0, 0.8),
-        rgba(0, 229, 255, 0.12)
-      );
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 12px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-
-    .title {
-      color: var(--accent);
-    }
-
-    .toolbar {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn {
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: rgba(0, 0, 0, 0.7);
-      color: var(--accent);
-      font-size: 10px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: 0.16s;
-    }
-
-    .btn:hover {
-      background: rgba(0, 229, 255, 0.16);
-      box-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
-      transform: translateY(-1px);
-    }
-
-    .layout {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 220px minmax(0, 1.4fr) minmax(0, 1.2fr);
-      gap: 8px;
-      padding: 8px;
-    }
-
-    .panel {
-      border-radius: 10px;
-      background: var(--panel-bg);
-      border: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .panel-header {
-      padding: 6px 10px;
-      font-size: 11px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: var(--text-soft);
-      border-bottom: 1px solid rgba(0, 229, 255, 0.2);
-    }
-
-    .panel-header span {
-      color: var(--accent);
-    }
-
-    .panel-body {
-      flex: 1;
-      overflow: auto;
-      padding: 6px;
-    }
-
-    .block {
-      padding: 6px 8px;
-      border-radius: 6px;
-      background: rgba(0, 229, 255, 0.12);
-      border: 1px solid rgba(0, 229, 255, 0.5);
-      color: var(--text-main);
-      font-size: 11px;
-      margin-bottom: 6px;
-      cursor: grab;
-      user-select: none;
-    }
-
-    .block:active {
-      cursor: grabbing;
-    }
-
-    .script-area {
-      position: relative;
-      min-height: 100%;
-      background: radial-gradient(circle at top, #050816, #000000 70%);
-      border-radius: 8px;
-      border: 1px dashed rgba(0, 229, 255, 0.4);
-    }
-
-    .script-block {
-      position: absolute;
-      padding: 6px 8px;
-      border-radius: 6px;
-      background: rgba(0, 229, 255, 0.18);
-      border: 1px solid rgba(0, 229, 255, 0.7);
-      font-size: 11px;
-      cursor: move;
-      user-select: none;
-      white-space: nowrap;
-    }
-
-    .script-block.selected {
-      box-shadow: 0 0 12px rgba(0, 229, 255, 0.8);
-    }
-
-    .stage {
-      position: relative;
+    input, textarea {
       width: 100%;
-      padding-top: 75%;
-      border-radius: 8px;
-      background: radial-gradient(circle at top, #050816, #000000 70%);
-      border: 1px solid rgba(0, 229, 255, 0.4);
-      overflow: hidden;
+      padding: 10px;
+      background: #000;
+      border: 1px solid #333;
+      color: white;
+      font-size: 14px;
     }
 
-    .sprite {
-      position: absolute;
-      width: 40px;
-      height: 40px;
-      border-radius: 6px;
-      background: linear-gradient(135deg, #00e5ff, #0066ff);
-      box-shadow: 0 0 14px rgba(0, 229, 255, 0.8);
+    textarea {
+      height: 250px;
+      resize: none;
+      font-family: monospace;
     }
 
-    .sprite-list-item {
-      padding: 4px 6px;
-      border-radius: 6px;
-      border: 1px solid rgba(0, 229, 255, 0.3);
-      margin-bottom: 4px;
-      font-size: 11px;
+    #previewPanel {
+      width: 60%;
+      background: #000;
+      padding: 20px;
+    }
+
+    #previewFrame {
+      width: 100%;
+      height: 100%;
+      background: #111;
+      border: none;
+    }
+
+    button {
+      padding: 12px;
+      background: #0066ff;
+      border: none;
+      color: white;
+      font-size: 16px;
       cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      margin-top: 10px;
     }
 
-    .sprite-list-item.active {
-      background: rgba(0, 229, 255, 0.16);
-      color: var(--accent);
-    }
-
-    .sprite-meta {
-      font-size: 10px;
-      color: var(--text-soft);
-      margin-top: 4px;
-    }
-
-    .log {
-      font-size: 11px;
-      color: var(--text-soft);
-      max-height: 120px;
-      overflow-y: auto;
-      border-top: 1px solid rgba(0, 229, 255, 0.2);
-      padding-top: 4px;
-      margin-top: 4px;
-    }
-
-    .log-entry {
-      margin-bottom: 2px;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 4px;
-      margin-top: 4px;
-      font-size: 11px;
-      color: var(--text-soft);
-    }
-
-    .input-row input {
-      flex: 1;
-      padding: 3px 6px;
-      border-radius: 6px;
-      border: 1px solid rgba(0, 229, 255, 0.4);
-      background: rgba(0, 0, 0, 0.7);
-      color: var(--text-main);
-      font-size: 11px;
-    }
-
-    .input-row label {
-      min-width: 70px;
-    }
-
-    @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto auto auto;
-      }
+    button:hover {
+      background: #0088ff;
     }
   </style>
 </head>
+
 <body>
-  <header>
-    <div class="title">GALAXIA STUDIO // GAME CREATOR</div>
-    <div class="toolbar">
-      <button class="btn" id="btnRun">RUN</button>
-      <button class="btn" id="btnStop">STOP</button>
-      <button class="btn" id="btnSave">SAVE</button>
-      <button class="btn" id="btnLoad">LOAD</button>
-    </div>
-  </header>
 
-  <div class="layout">
-    <!-- BLOCK PALETTE -->
-    <div class="panel">
-      <div class="panel-header">BLOCKS // <span>LOGIC</span></div>
-      <div class="panel-body" id="blockPalette">
-        <div class="block" data-type="when_start">when game starts</div>
-        <div class="block" data-type="when_click">when sprite clicked</div>
-        <div class="block" data-type="move_10">move 10 steps</div>
-        <div class="block" data-type="turn_15">turn 15°</div>
-        <div class="block" data-type="repeat_10">repeat 10 times</div>
-        <div class="block" data-type="forever">forever loop</div>
-      </div>
-    </div>
+  <!-- LEFT PANEL (Editor) -->
+  <div id="leftPanel">
 
-    <!-- SCRIPT AREA -->
-    <div class="panel">
-      <div class="panel-header">SCRIPT // <span>PROGRAM</span></div>
-      <div class="panel-body">
-        <div class="script-area" id="scriptArea"></div>
-      </div>
-    </div>
+    <h2>Galaxia Studio Pro</h2>
 
-    <!-- STAGE + SPRITES -->
-    <div class="panel">
-      <div class="panel-header">STAGE // <span>SPRITES</span></div>
-      <div class="panel-body">
-        <div class="stage" id="stage">
-          <div class="sprite" id="sprite-main"></div>
-        </div>
-        <div class="sprite-meta" id="spriteMeta">
-          Sprite: MAIN // x: 0, y: 0, rotation: 0°
-        </div>
+    <input id="gameTitle" placeholder="Game Title">
 
-        <div style="margin-top:6px;">
-          <div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-soft);margin-bottom:4px;">
-            SPRITES
-          </div>
-          <div id="spriteList">
-            <div class="sprite-list-item active" data-id="sprite-main">
-              <span>MAIN</span>
-              <span style="font-size:9px;color:var(--accent);">DEFAULT</span>
-            </div>
-          </div>
-        </div>
+    <input id="gameTagline" placeholder="Tagline (e.g. FAST TAPS)">
 
-        <div class="input-row">
-          <label>Project ID</label>
-          <input type="text" id="projectId" placeholder="my-first-game" />
-        </div>
+    <input id="gameXP" type="number" placeholder="XP Reward (e.g. 15)" value="10">
 
-        <div class="log" id="log"></div>
-      </div>
-    </div>
+    <textarea id="gameCode" placeholder="Write your game code here...
+This code will run inside:
+function runGame(id) { ... }"></textarea>
+
+    <button onclick="previewGame()">Preview</button>
+    <button onclick="publish()">Publish Game</button>
+
   </div>
 
-  <script>
-    const scriptArea = document.getElementById("scriptArea");
-    const blockPalette = document.getElementById("blockPalette");
-    const stage = document.getElementById("stage");
-    const sprite = document.getElementById("sprite-main");
-    const spriteMeta = document.getElementById("spriteMeta");
-    const logEl = document.getElementById("log");
-    const projectIdInput = document.getElementById("projectId");
+  <!-- RIGHT PANEL (Preview) -->
+  <div id="previewPanel">
+    <iframe id="previewFrame"></iframe>
+  </div>
 
-    const btnRun = document.getElementById("btnRun");
-    const btnStop = document.getElementById("btnStop");
-    const btnSave = document.getElementById("btnSave");
-    const btnLoad = document.getElementById("btnLoad");
+<script>
+  // ============================
+  // PREVIEW SYSTEM
+  // ============================
+  function previewGame() {
+    const code = document.getElementById("gameCode").value;
 
-    let blocks = [];
-    let running = false;
-    let spriteState = {
-      x: 50,
-      y: 50,
-      rotation: 0,
+    const html = `
+      <html>
+      <body style='background:#000; color:white; font-family:Arial;'>
+        <div id='gameContainer'></div>
+        <script>
+          ${code}
+        <\/script>
+      </body>
+      </html>
+    `;
+
+    const frame = document.getElementById("previewFrame");
+    frame.srcdoc = html;
+  }
+
+  // ============================
+  // PUBLISH SYSTEM
+  // ============================
+  function publish() {
+    const title = document.getElementById("gameTitle").value.trim();
+    const tagline = document.getElementById("gameTagline").value.trim();
+    const xp = parseInt(document.getElementById("gameXP").value);
+    const code = document.getElementById("gameCode").value.trim();
+
+    if (!title || !tagline || !code) {
+      alert("Please fill in all fields before publishing.");
+      return;
+    }
+
+    const id = "user_" + Math.floor(Math.random() * 999999);
+
+    const gameData = {
+      id,
+      title,
+      tagline,
+      xp,
+      code
     };
 
-    function log(msg) {
-      const div = document.createElement("div");
-      div.className = "log-entry";
-      div.textContent = msg;
-      logEl.appendChild(div);
-      logEl.scrollTop = logEl.scrollHeight;
-    }
+    // Send to index.html
+    parent.postMessage({
+      type: "publishGame",
+      payload: gameData
+    }, "*");
 
-    function updateSpritePosition() {
-      const rect = stage.getBoundingClientRect();
-      const sx = (spriteState.x / 100) * rect.width;
-      const sy = (spriteState.y / 100) * rect.height;
-      sprite.style.left = sx - sprite.offsetWidth / 2 + "px";
-      sprite.style.top = sy - sprite.offsetHeight / 2 + "px";
-      sprite.style.transform = `rotate(${spriteState.rotation}deg)`;
-      spriteMeta.textContent = `Sprite: MAIN // x: ${spriteState.x.toFixed(
-        1
-      )}, y: ${spriteState.y.toFixed(1)}, rotation: ${spriteState.rotation.toFixed(1)}°`;
-    }
+    alert("Game Published!");
+  }
+</script>
 
-    updateSpritePosition();
-
-    blockPalette.addEventListener("mousedown", (e) => {
-      const blockEl = e.target.closest(".block");
-      if (!blockEl) return;
-      const type = blockEl.dataset.type;
-      const newBlock = document.createElement("div");
-      newBlock.className = "script-block";
-      newBlock.textContent = blockEl.textContent;
-      newBlock.dataset.type = type;
-      newBlock.style.left = "10px";
-      newBlock.style.top = "10px";
-      scriptArea.appendChild(newBlock);
-      blocks.push({
-        el: newBlock,
-        type,
-        x: 10,
-        y: 10,
-      });
-      makeDraggable(newBlock);
-    });
-
-    function makeDraggable(el) {
-      let offsetX = 0;
-      let offsetY = 0;
-      let dragging = false;
-
-      el.addEventListener("mousedown", (e) => {
-        dragging = true;
-        el.classList.add("selected");
-        offsetX = e.clientX - el.offsetLeft;
-        offsetY = e.clientY - el.offsetTop;
-        document.addEventListener("mousemove", onMove);
-        document.addEventListener("mouseup", onUp);
-      });
-
-      function onMove(e) {
-        if (!dragging) return;
-        const x = e.clientX - offsetX;
-        const y = e.clientY - offsetY;
-        el.style.left = x + "px";
-        el.style.top = y + "px";
-        const block = blocks.find((b) => b.el === el);
-        if (block) {
-          block.x = x;
-          block.y = y;
-        }
-      }
-
-      function onUp() {
-        dragging = false;
-        el.classList.remove("selected");
-        document.removeEventListener("mousemove", onMove);
-        document.removeEventListener("mouseup", onUp);
-      }
-    }
-
-    function serializeProject() {
-      const projectId = projectIdInput.value.trim() || "default-project";
-      const data = {
-        id: projectId,
-        blocks: blocks.map((b) => ({
-          type: b.type,
-          x: b.x,
-          y: b.y,
-          text: b.el.textContent,
-        })),
-      };
-      return data;
-    }
-
-    function deserializeProject(data) {
-      blocks.forEach((b) => b.el.remove());
-      blocks = [];
-      if (!data || !data.blocks) return;
-      data.blocks.forEach((b) => {
-        const el = document.createElement("div");
-        el.className = "script-block";
-        el.textContent = b.text;
-        el.dataset.type = b.type;
-        el.style.left = b.x + "px";
-        el.style.top = b.y + "px";
-        scriptArea.appendChild(el);
-        const blockObj = { el, type: b.type, x: b.x, y: b.y };
-        blocks.push(blockObj);
-        makeDraggable(el);
-      });
-      log("Loaded " + blocks.length + " blocks.");
-    }
-
-    btnSave.addEventListener("click", () => {
-      const data = serializeProject();
-      const key = "galaxia_project_" + data.id;
-      localStorage.setItem(key, JSON.stringify(data));
-      log("Saved project as " + key);
-    });
-
-    btnLoad.addEventListener("click", () => {
-      const projectId = projectIdInput.value.trim() || "default-project";
-      const key = "galaxia_project_" + projectId;
-      const raw = localStorage.getItem(key);
-      if (!raw) {
-        log("No project found for " + key);
-        return;
-      }
-      try {
-        const data = JSON.parse(raw);
-        deserializeProject(data);
-        log("Project loaded: " + key);
-      } catch (e) {
-        log("Error loading project.");
-      }
-    });
-
-    function runBlocks() {
-      running = true;
-      log("Running project...");
-      spriteState = { x: 50, y: 50, rotation: 0 };
-      updateSpritePosition();
-
-      const ordered = [...blocks].sort((a, b) => a.y - b.y);
-
-      function execBlock(block, depth = 0) {
-        if (!running) return;
-        const type = block.type;
-        if (type === "move_10") {
-          spriteState.x += 5 * Math.cos((spriteState.rotation * Math.PI) / 180);
-          spriteState.y += 5 * Math.sin((spriteState.rotation * Math.PI) / 180);
-          updateSpritePosition();
-        } else if (type === "turn_15") {
-          spriteState.rotation += 15;
-          updateSpritePosition();
-        } else if (type === "repeat_10") {
-          for (let i = 0; i < 10; i++) {
-            ordered.forEach((b) => {
-              if (b === block) return;
-              if (b.type === "move_10" || b.type === "turn_15") {
-                execBlock(b, depth + 1);
-              }
-            });
-          }
-        } else if (type === "forever") {
-          let count = 0;
-          function loop() {
-            if (!running || count > 100) return;
-            ordered.forEach((b) => {
-              if (b === block) return;
-              if (b.type === "move_10" || b.type === "turn_15") {
-                execBlock(b, depth + 1);
-              }
-            });
-            count++;
-            setTimeout(loop, 80);
-          }
-          loop();
-        }
-      }
-
-      ordered.forEach((b) => {
-        if (b.type === "when_start") {
-          execBlock(b);
-        }
-      });
-    }
-
-    btnRun.addEventListener("click", () => {
-      if (running) return;
-      runBlocks();
-    });
-
-    btnStop.addEventListener("click", () => {
-      running = false;
-      log("Stopped.");
-    });
-
-    sprite.addEventListener("click", () => {
-      if (!running) return;
-      const ordered = [...blocks].sort((a, b) => a.y - b.y);
-      ordered.forEach((b) => {
-        if (b.type === "when_click") {
-          spriteState.rotation += 45;
-          updateSpritePosition();
-        }
-      });
-    });
-
-    log("GALAXIA STUDIO READY. Build your first game.");
-  </script>
 </body>
 </html>
