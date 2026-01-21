@@ -33,7 +33,6 @@
       overflow: hidden;
     }
 
-    /* Background effects */
     .starfield {
       position: fixed;
       inset: 0;
@@ -68,7 +67,6 @@
       z-index: 2;
     }
 
-    /* Layout */
     .app-shell {
       position: relative;
       z-index: 3;
@@ -180,7 +178,6 @@
       100% { transform: scale(1); opacity: 1; }
     }
 
-    /* Sidebar */
     .sidebar {
       border-right: 1px solid rgba(0, 229, 255, 0.25);
       background: linear-gradient(
@@ -357,7 +354,6 @@
       opacity: 0.7;
     }
 
-    /* Main area */
     .main {
       padding: 16px 18px 14px;
       display: flex;
@@ -484,7 +480,6 @@
       position: relative;
     }
 
-    /* Game grid */
     .game-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -578,7 +573,6 @@
       color: var(--good);
     }
 
-    /* Game viewport */
     .game-viewport {
       position: relative;
       height: 100%;
@@ -692,7 +686,6 @@
       text-align: right;
     }
 
-    /* Activity / log panel */
     .log-list {
       font-size: 11px;
       color: var(--text-soft);
@@ -725,7 +718,6 @@
       font-size: 9px;
     }
 
-    /* Simple mini-games */
     .clicker-container {
       display: flex;
       flex-direction: column;
@@ -847,7 +839,60 @@
       color: var(--accent);
     }
 
-    /* Responsive */
+    .arena3d-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      perspective: 700px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .arena3d {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      transform-style: preserve-3d;
+      transition: transform 0.08s linear;
+    }
+
+    .arena3d-cube-face {
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 16px;
+      border: 1px solid rgba(0, 229, 255, 0.6);
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.7);
+      background: radial-gradient(circle at top, rgba(0, 229, 255, 0.25), rgba(0, 0, 0, 0.95));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .arena3d-face-front  { transform: translateZ(90px); }
+    .arena3d-face-back   { transform: rotateY(180deg) translateZ(90px); }
+    .arena3d-face-right  { transform: rotateY(90deg) translateZ(90px); }
+    .arena3d-face-left   { transform: rotateY(-90deg) translateZ(90px); }
+    .arena3d-face-top    { transform: rotateX(90deg) translateZ(90px); }
+    .arena3d-face-bottom { transform: rotateX(-90deg) translateZ(90px); }
+
+    .arena3d-hints {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: var(--text-soft);
+      text-align: center;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
     @media (max-width: 900px) {
       .app-shell {
         grid-template-columns: 1fr;
@@ -924,6 +969,11 @@
             <span>SESSION LOG</span>
             <small>FEED</small>
           </button>
+          <!-- NEW: GAME CREATOR BUTTON -->
+          <button class="nav-btn" id="creatorBtn">
+            <span>GAME CREATOR</span>
+            <small>STUDIO</small>
+          </button>
         </div>
       </div>
 
@@ -981,9 +1031,7 @@
             <div>FILTER: <span>CURATED</span></div>
           </div>
           <div class="panel-body">
-            <div class="game-grid" id="gameGrid">
-              <!-- Game cards injected by JS -->
-            </div>
+            <div class="game-grid" id="gameGrid"></div>
           </div>
         </section>
 
@@ -1022,7 +1070,6 @@
   </div>
 
   <script>
-    // --- Core state ---
     const state = {
       xp: 0,
       level: 1,
@@ -1073,9 +1120,17 @@
         channel: "GX-04",
         xpPerRun: 5,
       },
+      {
+        id: "arena3d",
+        name: "HOLO CUBE ARENA",
+        tagline: "Rotate the cube. Hold alignment. Survive the drift.",
+        difficulty: "HARD",
+        type: "3D",
+        channel: "GX-05",
+        xpPerRun: 25,
+      },
     ];
 
-    // --- DOM refs ---
     const gameGrid = document.getElementById("gameGrid");
     const xpFill = document.getElementById("xpFill");
     const xpText = document.getElementById("xpText");
@@ -1094,7 +1149,6 @@
     const btnReset = document.getElementById("btnReset");
     const mainSubtitle = document.getElementById("mainSubtitle");
 
-    // --- Local storage ---
     function loadState() {
       try {
         const saved = JSON.parse(localStorage.getItem("galaxia_blox_state"));
@@ -1119,7 +1173,6 @@
       localStorage.setItem("galaxia_blox_state", JSON.stringify(toSave));
     }
 
-    // --- UI update ---
     function updateProfileUI() {
       const pct = Math.min(100, (state.xp / state.xpToNext) * 100);
       xpFill.style.width = pct + "%";
@@ -1189,7 +1242,6 @@
         `;
         logList.appendChild(row);
       });
-      // Only attach if current left panel is log view
       if (panel.dataset.mode === "log") {
         const body = panel.querySelector(".panel-body");
         body.innerHTML = "";
@@ -1197,7 +1249,6 @@
       }
     }
 
-    // --- Game grid ---
     function renderGameGrid() {
       gameGrid.innerHTML = "";
       games.forEach((game) => {
@@ -1209,7 +1260,9 @@
           <div class="game-tagline">${game.tagline}</div>
           <div class="game-meta">
             <span>${game.type} // ${game.channel}</span>
-            <span class="badge ${game.difficulty === "HARD" ? "danger" : game.difficulty === "EASY" ? "good" : ""}">
+            <span class="badge ${
+              game.difficulty === "HARD" ? "danger" : game.difficulty === "EASY" ? "good" : ""
+            }">
               ${game.difficulty}
             </span>
           </div>
@@ -1219,7 +1272,6 @@
       });
     }
 
-    // --- Game selection ---
     function selectGame(gameId) {
       const game = games.find((g) => g.id === gameId);
       if (!game) return;
@@ -1237,7 +1289,6 @@
       logEvent("GAME SELECT", game.name);
     }
 
-    // --- Game instances ---
     function createGameInstance(game) {
       switch (game.type) {
         case "CLICKER":
@@ -1248,13 +1299,14 @@
           return createReactionGame(game);
         case "IDLE":
           return createIdleGame(game);
+        case "3D":
+          return create3DGame(game);
         default:
           gameCanvas.textContent = "UNKNOWN GAME TYPE.";
           return null;
       }
     }
 
-    // CLICKER GAME
     function createClickerGame(game) {
       const container = document.createElement("div");
       container.className = "clicker-container";
@@ -1312,7 +1364,6 @@
       };
     }
 
-    // DODGE GAME
     function createDodgeGame(game) {
       const container = document.createElement("div");
       container.className = "dodge-container";
@@ -1436,7 +1487,6 @@
       };
     }
 
-    // REACTION GAME
     function createReactionGame(game) {
       const container = document.createElement("div");
       container.className = "reaction-container";
@@ -1531,7 +1581,6 @@
       };
     }
 
-    // IDLE GAME
     function createIdleGame(game) {
       const container = document.createElement("div");
       container.className = "clicker-container";
@@ -1581,7 +1630,130 @@
       };
     }
 
-    // --- Controls ---
+    function create3DGame(game) {
+      const container = document.createElement("div");
+      container.className = "arena3d-container";
+
+      const arena = document.createElement("div");
+      arena.className = "arena3d";
+
+      const faces = [
+        { cls: "arena3d-face-front", label: "FRONT" },
+        { cls: "arena3d-face-back", label: "BACK" },
+        { cls: "arena3d-face-right", label: "RIGHT" },
+        { cls: "arena3d-face-left", label: "LEFT" },
+        { cls: "arena3d-face-top", label: "TOP" },
+        { cls: "arena3d-face-bottom", label: "BOTTOM" },
+      ];
+
+      faces.forEach((f) => {
+        const face = document.createElement("div");
+        face.className = "arena3d-cube-face " + f.cls;
+        face.textContent = f.label;
+        arena.appendChild(face);
+      });
+
+      const hints = document.createElement("div");
+      hints.className = "arena3d-hints";
+      hints.innerHTML = "ARROWS: ROTATE // HOLD ALIGNMENT FOR SCORE";
+
+      container.appendChild(arena);
+      container.appendChild(hints);
+      gameCanvas.appendChild(container);
+
+      let rotX = -20;
+      let rotY = 30;
+      let running = false;
+      let score = 0;
+      let driftX = 0;
+      let driftY = 0;
+      let driftTimer = null;
+      let scoreTimer = null;
+
+      function updateTransform() {
+        arena.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+      }
+
+      function randomDrift() {
+        driftX = (Math.random() - 0.5) * 0.6;
+        driftY = (Math.random() - 0.5) * 0.6;
+      }
+
+      function tickScore() {
+        const alignedX = Math.abs(rotX % 90);
+        const alignedY = Math.abs(rotY % 90);
+        const nearFace = alignedX < 8 || alignedX > 82 || alignedY < 8 || alignedY > 82;
+        if (nearFace) {
+          score += 3;
+        } else {
+          score += 1;
+        }
+        gameLog.textContent = `SCORE: ${score} // ALIGNMENT ${
+          nearFace ? "LOCKED" : "DRIFT"
+        }`;
+      }
+
+      function loopDrift() {
+        if (!running) return;
+        rotX += driftX;
+        rotY += driftY;
+        updateTransform();
+      }
+
+      function handleKey(e) {
+        if (!running) return;
+        const step = 4;
+        if (e.key === "ArrowUp") rotX -= step;
+        if (e.key === "ArrowDown") rotX += step;
+        if (e.key === "ArrowLeft") rotY -= step;
+        if (e.key === "ArrowRight") rotY += step;
+        updateTransform();
+      }
+
+      document.addEventListener("keydown", handleKey);
+
+      return {
+        start() {
+          if (running) return;
+          running = true;
+          score = 0;
+          randomDrift();
+          updateTransform();
+          gameStatusText.textContent = "LIVE // 3D ARENA";
+          logEvent("GAME START", game.name);
+          driftTimer = setInterval(() => {
+            randomDrift();
+            loopDrift();
+          }, 60);
+          scoreTimer = setInterval(tickScore, 500);
+        },
+        reset() {
+          running = false;
+          if (driftTimer) clearInterval(driftTimer);
+          if (scoreTimer) clearInterval(scoreTimer);
+          driftTimer = null;
+          scoreTimer = null;
+          rotX = -20;
+          rotY = 30;
+          updateTransform();
+          gameStatusText.textContent = "READY";
+          gameLog.textContent = "SESSION CLEARED.";
+          addXP(game.xpPerRun + Math.floor(score / 10), `${game.name} // score ${score}`);
+          state.totalGames++;
+          if (score > state.bestScore) state.bestScore = score;
+          updateProfileUI();
+          saveState();
+          logEvent("GAME END", `${game.name} // score ${score}`);
+        },
+        destroy() {
+          running = false;
+          if (driftTimer) clearInterval(driftTimer);
+          if (scoreTimer) clearInterval(scoreTimer);
+          document.removeEventListener("keydown", handleKey);
+        },
+      };
+    }
+
     btnStart.addEventListener("click", () => {
       if (!state.currentGameInstance) {
         gameLog.textContent = "NO GAME SELECTED.";
@@ -1598,9 +1770,9 @@
       state.currentGameInstance.reset && state.currentGameInstance.reset();
     });
 
-    // --- Sidebar nav views (for future expansion) ---
     document.querySelectorAll(".nav-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
+        if (btn.id === "creatorBtn") return; // handled separately
         document.querySelectorAll(".nav-btn").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         const view = btn.dataset.view;
@@ -1640,7 +1812,6 @@
       });
     });
 
-    // --- View toggle (for future expansion) ---
     document.querySelectorAll(".view-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".view-btn").forEach((b) => b.classList.remove("active"));
@@ -1648,7 +1819,12 @@
       });
     });
 
-    // --- Init ---
+    // GAME CREATOR BUTTON: opens creator.html
+    const creatorBtn = document.getElementById("creatorBtn");
+    creatorBtn.addEventListener("click", () => {
+      window.open("creator.html", "_blank");
+    });
+
     loadState();
     updateProfileUI();
     renderGameGrid();
