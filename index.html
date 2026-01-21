@@ -1,1396 +1,857 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>GALAXIA BLOX 2.0 // NEON ARCADE OS</title>
-
-  
+  <meta charset="UTF-8">
+  <title>Galaxia OS — Hyper Arcade</title>
   <style>
-/* ========================= */
-/*   GALAXIA BLOX 2.0 THEME  */
-/* ========================= */
-
-:root {
-  --bg: #02030a;
-  --bg-alt: #05081a;
-  --accent: #00e5ff;
-  --accent-soft: rgba(0, 229, 255, 0.2);
-  --accent-strong: rgba(0, 229, 255, 0.8);
-  --good: #00ff99;
-  --danger: #ff3366;
-  --text-main: #e6f7ff;
-  --text-soft: #7f9bb5;
-  --panel-bg: rgba(5, 10, 30, 0.96);
-  --border: rgba(0, 229, 255, 0.4);
-  --border-soft: rgba(0, 229, 255, 0.2);
-  --glow: 0 0 18px rgba(0, 229, 255, 0.5);
-}
-
-/* RESET */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background: radial-gradient(circle at top, #04152b 0, #02030a 40%, #000000 100%);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: var(--text-main);
-  overflow: hidden;
-  height: 100vh;
-}
-
-/* BACKGROUND LAYERS */
-.starfield {
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.15) 0, transparent 40%),
-    radial-gradient(circle at 80% 10%, rgba(0, 255, 153, 0.12) 0, transparent 45%),
-    radial-gradient(circle at 50% 80%, rgba(0, 153, 255, 0.1) 0, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.scanlines {
-  position: fixed;
-  inset: 0;
-  background-image: linear-gradient(
-    rgba(255, 255, 255, 0.03) 1px,
-    transparent 1px
-  );
-  background-size: 100% 2px;
-  mix-blend-mode: soft-light;
-  opacity: 0.25;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.noise {
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E");
-  mix-blend-mode: soft-light;
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* APP LAYOUT */
-.app-shell {
-  position: relative;
-  z-index: 3;
-  display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
-  height: 100vh;
-}
-
-/* HEADER */
-.topbar {
-  grid-column: 1 / -1;
-  padding: 14px 22px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid var(--border-soft);
-  background: linear-gradient(
-    90deg,
-    rgba(0, 229, 255, 0.18),
-    rgba(0, 0, 0, 0.7),
-    rgba(0, 229, 255, 0.12)
-  );
-  box-shadow: 0 0 25px rgba(0, 229, 255, 0.25);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.brand-orb {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: conic-gradient(
-    from 180deg,
-    #00e5ff,
-    #00ff99,
-    #0066ff,
-    #00e5ff
-  );
-  box-shadow:
-    0 0 20px rgba(0, 229, 255, 0.8),
-    0 0 40px rgba(0, 255, 153, 0.5);
-  position: relative;
-}
-
-.brand-orb::after {
-  content: "";
-  position: absolute;
-  inset: 4px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 20%, #ffffff, transparent 55%);
-  opacity: 0.9;
-}
-
-.brand-main {
-  font-size: 18px;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: var(--accent);
-  text-shadow: 0 0 12px rgba(0, 229, 255, 0.8);
-}
-
-.brand-sub {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-}
-
-.session-info {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-}
-
-.status-pill {
-  padding: 6px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: radial-gradient(circle at 0 0, rgba(0, 229, 255, 0.4), transparent 60%);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: var(--glow);
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--good);
-  box-shadow: 0 0 12px rgba(0, 255, 153, 0.9);
-  animation: pulse 1.4s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.4); opacity: 0.4; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* SIDEBAR */
-.sidebar {
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.85),
-    rgba(2, 3, 10, 0.98)
-  );
-  border-right: 1px solid var(--border-soft);
-  padding: 16px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-/* PROFILE CARD */
-.profile-card {
-  padding: 12px;
-  border-radius: 14px;
-  background: radial-gradient(circle at top, rgba(0, 229, 255, 0.18), rgba(0, 0, 0, 0.9));
-  border: 1px solid var(--border);
-  box-shadow: var(--glow);
-}
-
-.profile-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #00e5ff, #0066ff);
-  box-shadow:
-    0 0 18px rgba(0, 229, 255, 0.8),
-    0 0 30px rgba(0, 102, 255, 0.7);
-}
-
-.profile-name {
-  font-size: 13px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.profile-rank {
-  font-size: 11px;
-  color: var(--text-soft);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.xp-bar {
-  margin-top: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: rgba(0, 229, 255, 0.12);
-  overflow: hidden;
-}
-
-.xp-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #00e5ff, #00ff99);
-  box-shadow: var(--glow);
-  transition: width 0.4s ease-out;
-}
-
-.xp-labels {
-  margin-top: 4px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--text-soft);
-}
-
-/* NAVIGATION */
-.nav-title {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-  margin-bottom: 6px;
-}
-
-.nav-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.nav-btn {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid var(--border-soft);
-  background: rgba(0, 0, 0, 0.7);
-  color: var(--text-main);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  display: flex;
-  justify-content: space-between;
-  cursor: pointer;
-  transition: 0.18s;
-}
-
-.nav-btn:hover {
-  background: var(--accent-soft);
-  box-shadow: var(--glow);
-  transform: translateY(-1px);
-}
-
-.nav-btn.active {
-  background: linear-gradient(90deg, rgba(0, 229, 255, 0.3), rgba(0, 0, 0, 0.9));
-  border-color: var(--accent);
-  box-shadow: var(--glow);
-}
-
-/* STATS */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.stat-card {
-  padding: 6px 8px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid var(--border-soft);
-}
-
-.stat-label {
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-}
-
-.stat-value {
-  font-size: 12px;
-  color: var(--accent);
-}
-
-/* FOOTER */
-.footer-note {
-  margin-top: auto;
-  font-size: 10px;
-  color: var(--text-soft);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  opacity: 0.7;
-}
-
-/* MAIN CONTENT */
-.main {
-  padding: 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.main-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.main-title {
-  font-size: 16px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.main-subtitle {
-  font-size: 11px;
-  color: var(--text-soft);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.chip-row {
-  display: flex;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.chip {
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border-soft);
-  background: rgba(0, 0, 0, 0.7);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-}
-
-.chip.highlight {
-  border-color: var(--good);
-  color: var(--good);
-  box-shadow: 0 0 14px rgba(0, 255, 153, 0.5);
-}
-
-/* VIEW TOGGLE */
-.view-toggle {
-  display: flex;
-  gap: 6px;
-}
-
-.view-btn {
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border-soft);
-  background: rgba(0, 0, 0, 0.7);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-  cursor: pointer;
-  transition: 0.16s;
-}
-
-.view-btn.active {
-  background: var(--accent-soft);
-  color: var(--accent);
-  box-shadow: var(--glow);
-}
-
-/* CONTENT GRID */
-.content {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.1fr);
-  gap: 12px;
-  min-height: 0;
-}
-
-/* PANELS */
-.panel {
-  border-radius: 16px;
-  background: var(--panel-bg);
-  border: 1px solid var(--border-soft);
-  box-shadow: var(--glow);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-height: 0;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--text-soft);
-}
-
-.panel-header span {
-  color: var(--accent);
-}
-
-.panel-body {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  position: relative;
-}
-
-/* GAME GRID */
-.game-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
-  height: 100%;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.game-card {
-  padding: 10px;
-  border-radius: 14px;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid var(--border-soft);
-  cursor: pointer;
-  transition: 0.18s;
-}
-
-.game-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--accent);
-  box-shadow: var(--glow);
-}
-
-.game-title {
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.game-tagline {
-  font-size: 11px;
-  color: var(--text-soft);
-}
-
-.game-meta {
-  font-size: 10px;
-  color: var(--text-soft);
-  margin-top: 4px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.badge {
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.badge.good {
-  border-color: var(--good);
-  color: var(--good);
-}
-
-.badge.danger {
-  border-color: var(--danger);
-  color: var(--danger);
-}
-
-/* VIEWPORT */
-.game-viewport {
-  position: relative;
-  height: 100%;
-  border-radius: 12px;
-  background: radial-gradient(circle at top, #050816, #02030a 60%, #000000 100%);
-  border: 1px solid var(--border-soft);
-  overflow: hidden;
-  box-shadow: var(--glow);
-}
-
-.viewport-inner {
-  position: absolute;
-  inset: 0;
-  padding: 10px;
-  color: var(--text-soft);
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* IFRAME FOR CREATOR */
-#creatorFrame {
-  width: 100%;
-  height: 100%;
-  border: none;
-  border-radius: 12px;
-}
-
-/* RESPONSIVE */
-@media (max-width: 900px) {
-  .app-shell {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto minmax(0, 1fr);
-  }
-
-  .sidebar {
-    grid-row: 2;
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 10px;
-  }
-
-  .content {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
+    :root {
+      --bg: #02030a;
+      --panel: #050816;
+      --accent: #00e5ff;
+      --accent-soft: #0099ff;
+      --text: #e6f7ff;
+      --muted: #7a8ca5;
+      --danger: #ff3366;
+      --border-glow: 0 0 12px rgba(0, 229, 255, 0.8);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #041b3b 0, #02030a 40%, #000 100%);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* Starfield */
+    #starfield {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle, rgba(0,229,255,0.6) 0, transparent 60%) 10% 20% / 2px 2px no-repeat,
+        radial-gradient(circle, rgba(0,229,255,0.4) 0, transparent 60%) 30% 80% / 2px 2px no-repeat,
+        radial-gradient(circle, rgba(0,229,255,0.5) 0, transparent 60%) 70% 40% / 2px 2px no-repeat,
+        radial-gradient(circle, rgba(0,229,255,0.7) 0, transparent 60%) 90% 10% / 2px 2px no-repeat,
+        radial-gradient(circle, rgba(0,229,255,0.5) 0, transparent 60%) 50% 60% / 2px 2px no-repeat,
+        radial-gradient(circle, rgba(0,229,255,0.4) 0, transparent 60%) 20% 50% / 2px 2px no-repeat;
+      animation: starDrift 18s linear infinite;
+      opacity: 0.9;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes starDrift {
+      0% { transform: translate3d(0,0,0); }
+      100% { transform: translate3d(-80px, -120px, 0); }
+    }
+
+    /* Main layout */
+    #shell {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 16px;
+      gap: 10px;
+    }
+
+    /* Top bar */
+    #topBar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.7), rgba(0,20,40,0.9));
+      border-radius: 10px;
+      border: 1px solid rgba(0,229,255,0.4);
+      box-shadow: var(--border-glow);
+      backdrop-filter: blur(8px);
+    }
+
+    #titleBlock {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    #mainTitle {
+      font-size: 18px;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    #mainSubtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #sessionId {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* Nav */
+    #navBar {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      padding: 6px 14px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      border-radius: 999px;
+      border: 1px solid rgba(0,229,255,0.4);
+      background: radial-gradient(circle at top, rgba(0,229,255,0.18), rgba(0,0,0,0.9));
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+
+    .nav-btn.active {
+      background: linear-gradient(90deg, #00e5ff, #0066ff);
+      box-shadow: 0 0 16px rgba(0,229,255,0.8);
+      color: #000;
+      transform: translateY(-1px);
+    }
+
+    .nav-btn:hover {
+      box-shadow: 0 0 10px rgba(0,229,255,0.6);
+    }
+
+    /* Core panels */
+    #core {
+      flex: 1;
+      display: flex;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    #panelLeft, #panelRight {
+      background: radial-gradient(circle at top left, rgba(0,229,255,0.12), rgba(0,0,0,0.95));
+      border-radius: 14px;
+      border: 1px solid rgba(0,229,255,0.4);
+      box-shadow: var(--border-glow);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      backdrop-filter: blur(10px);
+    }
+
+    #panelLeft {
+      flex: 1;
+      min-width: 0;
+    }
+
+    #panelRight {
+      flex: 1.4;
+      min-width: 0;
+    }
+
+    /* Left panel: game grid */
+    #gridHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #gameGrid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .game-card {
+      background: radial-gradient(circle at top, rgba(0,229,255,0.18), rgba(0,0,0,0.95));
+      border-radius: 10px;
+      border: 1px solid rgba(0,229,255,0.4);
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    }
+
+    .game-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 14px rgba(0,229,255,0.8);
+      border-color: var(--accent);
+    }
+
+    .game-title {
+      font-size: 13px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .game-tagline {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .game-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .badge {
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(0,229,255,0.15);
+      border: 1px solid rgba(0,229,255,0.6);
+      color: var(--accent);
+      font-size: 10px;
+    }
+
+    /* Right panel: viewport */
+    #viewportHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #currentGameTitle {
+      font-size: 14px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    #currentGameMeta {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    #viewportOuter {
+      flex: 1;
+      border-radius: 10px;
+      border: 1px solid rgba(0,229,255,0.4);
+      background: radial-gradient(circle at top, rgba(0,229,255,0.12), rgba(0,0,0,0.95));
+      overflow: hidden;
+      position: relative;
+    }
+
+    #viewportInner {
+      position: absolute;
+      inset: 0;
+      padding: 10px;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    #gameContainer {
+      width: 100%;
+      height: 100%;
+    }
+
+    iframe#creatorFrame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #000;
+    }
+
+    /* Bottom bar: XP + stats */
+    #bottomBar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 12px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.85), rgba(0,20,40,0.95));
+      border-radius: 10px;
+      border: 1px solid rgba(0,229,255,0.4);
+      box-shadow: var(--border-glow);
+      backdrop-filter: blur(8px);
+      font-size: 11px;
+    }
+
+    #xpBarOuter {
+      flex: 1.4;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.8);
+      border: 1px solid rgba(0,229,255,0.4);
+      overflow: hidden;
+      position: relative;
+    }
+
+    #xpFill {
+      position: absolute;
+      inset: 0;
+      width: 0%;
+      background: linear-gradient(90deg, #00e5ff, #0066ff);
+      box-shadow: 0 0 12px rgba(0,229,255,0.9);
+      transition: width 0.2s ease-out;
+    }
+
+    #xpText {
+      margin-left: 8px;
+      color: var(--muted);
+    }
+
+    #levelText {
+      margin-left: 12px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    #stats {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .stat-label {
+      color: var(--muted);
+    }
+
+    .stat-value {
+      color: var(--accent-soft);
+      font-weight: 600;
+    }
+
+    #creatorBtn {
+      margin-left: auto;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,229,255,0.6);
+      background: radial-gradient(circle at top, rgba(0,229,255,0.25), rgba(0,0,0,0.95));
+      color: var(--text);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(0,229,255,0.7);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    #creatorBtn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 0 18px rgba(0,229,255,1);
+    }
+
+    /* Scrollbars */
+    #gameGrid::-webkit-scrollbar {
+      width: 6px;
+    }
+    #gameGrid::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #gameGrid::-webkit-scrollbar-thumb {
+      background: rgba(0,229,255,0.4);
+      border-radius: 999px;
+    }
   </style>
-
 </head>
-  <meta charset="UTF-8" />
-  <title>GALAXIA BLOX 2.0 // NEON ARCADE OS</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-</head>
-
 <body>
+  <div id="starfield"></div>
 
-  <!-- BACKGROUND LAYERS -->
-  <div class="starfield"></div>
-  <div class="scanlines"></div>
-  <div class="noise"></div>
-
-  <!-- APP SHELL -->
-  <div class="app-shell">
-
-    <!-- HEADER -->
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-orb"></div>
-        <div class="brand-text">
-          <div class="brand-main">GALAXIA BLOX 2.0</div>
-          <div class="brand-sub">NEON ARCADE OPERATING SYSTEM</div>
-        </div>
+  <div id="shell">
+    <!-- TOP BAR -->
+    <div id="topBar">
+      <div id="titleBlock">
+        <div id="mainTitle">GALAXIA OS // HYPER ARCADE</div>
+        <div id="mainSubtitle">SELECT A SIMULATION</div>
+        <div id="sessionId">SESSION: GX-0000</div>
       </div>
 
-      <div class="session-info">
-        <div class="status-pill">
-          <div class="status-dot"></div>
-          <span>NODE ONLINE</span>
-        </div>
-        <div class="session-id">SESSION: <span id="sessionId">GX‑0001</span></div>
+      <div id="navBar">
+        <button class="nav-btn active" data-view="hub">HUB</button>
+        <button class="nav-btn" data-view="profile">PROFILE</button>
+        <button class="nav-btn" data-view="log">LOG</button>
+        <button class="nav-btn" data-view="creator">CREATOR</button>
       </div>
-    </header>
+    </div>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-
-      <!-- PROFILE CARD -->
-      <div class="profile-card">
-        <div class="profile-header">
-          <div class="avatar"></div>
-          <div class="profile-meta">
-            <div class="profile-name" id="playerName">WILLIAM // CORE</div>
-            <div class="profile-rank" id="playerRank">RANK: CADET</div>
-          </div>
+    <!-- CORE PANELS -->
+    <div id="core">
+      <!-- LEFT: GAME GRID -->
+      <div id="panelLeft">
+        <div id="gridHeader">
+          <span>SIMULATION GRID</span>
+          <span id="gridMeta"><span class="stat-label">TOTAL:</span> <span class="stat-value" id="statGames">0</span></span>
         </div>
-
-        <div class="xp-bar">
-          <div class="xp-fill" id="xpFill"></div>
-        </div>
-
-        <div class="xp-labels">
-          <span id="xpText">XP: 0 / 100</span>
-          <span id="levelText">LVL 1</span>
-        </div>
+        <div id="gameGrid"></div>
       </div>
 
-      <!-- NAVIGATION -->
-      <div class="nav-section">
-        <div class="nav-title">NAVIGATION</div>
-
-        <div class="nav-buttons">
-
-          <button class="nav-btn active" data-view="hub">
-            <span>ARCADE HUB</span>
-            <small>GRID</small>
-          </button>
-
-          <button class="nav-btn" data-view="profile">
-            <span>PILOT PROFILE</span>
-            <small>STATS</small>
-          </button>
-
-          <button class="nav-btn" data-view="log">
-            <span>SESSION LOG</span>
-            <small>FEED</small>
-          </button>
-
-          <!-- ⭐ NEW: GAME CREATOR BUTTON ⭐ -->
-          <button class="nav-btn" data-view="creator" id="creatorBtn">
-            <span>GAME CREATOR</span>
-            <small>STUDIO</small>
-          </button>
-
+      <!-- RIGHT: VIEWPORT -->
+      <div id="panelRight">
+        <div id="viewportHeader">
+          <div>
+            <div id="currentGameTitle">NO SIMULATION LOADED</div>
+            <div id="currentGameMeta">SELECT A SIMULATION FROM THE GRID</div>
+          </div>
         </div>
-      </div>
-
-      <!-- CORE STATS -->
-      <div class="stats-section">
-        <div class="nav-title">CORE STATS</div>
-
-        <div class="stat-grid">
-          <div class="stat-card">
-            <div class="stat-label">TOTAL GAMES</div>
-            <div class="stat-value" id="statGames">0</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-label">BEST SCORE</div>
-            <div class="stat-value" id="statBest">0</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-label">SESSIONS</div>
-            <div class="stat-value" id="statSessions">1</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="stat-label">XP MULTIPLIER</div>
-            <div class="stat-value" id="statMultiplier">1.0x</div>
+        <div id="viewportOuter">
+          <div id="viewportInner">
+            <div id="gameContainer"></div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="footer-note">
-        GALAXIA BLOX 2.0 // LOCAL SIMULATION NODE<br>
-        PROGRESSION STORED LOCALLY
+    <!-- BOTTOM BAR -->
+    <div id="bottomBar">
+      <div id="xpBarOuter">
+        <div id="xpFill"></div>
+      </div>
+      <div id="xpText">XP: 0 / 100</div>
+      <div id="levelText">LVL 1</div>
+
+      <div id="stats">
+        <div><span class="stat-label">BEST:</span> <span class="stat-value" id="statBest">0</span></div>
+        <div><span class="stat-label">SESSIONS:</span> <span class="stat-value" id="statSessions">1</span></div>
+        <div><span class="stat-label">MULT:</span> <span class="stat-value" id="statMultiplier">1.0x</span></div>
       </div>
 
-    </aside>
+      <button id="creatorBtn">OPEN CREATOR</button>
+    </div>
+  </div>
 
-    <!-- MAIN CONTENT -->
-    <main class="main">
-
-      <!-- TOP BAR -->
-      <div class="main-top">
-        <div class="main-title-block">
-          <div class="main-title">ARCADE GRID // LIVE</div>
-          <div class="main-subtitle" id="mainSubtitle">SELECT A SIMULATION</div>
-
-          <div class="chip-row">
-            <div class="chip highlight">XP LINKED</div>
-            <div class="chip">OFFLINE MODE</div>
-            <div class="chip">LOCAL STORAGE</div>
-          </div>
-        </div>
-
-        <div class="view-toggle">
-          <button class="view-btn active" data-viewmode="games">GAMES</button>
-          <button class="view-btn" data-viewmode="profile">PROFILE</button>
-        </div>
-      </div>
-
-      <!-- CONTENT GRID -->
-      <div class="content">
-
-        <!-- LEFT PANEL -->
-        <section class="panel" id="panelLeft">
-          <div class="panel-header">
-            <div>ARCADE GRID // <span>SIMULATIONS</span></div>
-            <div>FILTER: <span>CURATED</span></div>
-          </div>
-
-          <div class="panel-body">
-            <div class="game-grid" id="gameGrid"></div>
-          </div>
-        </section>
-
-        <!-- RIGHT PANEL -->
-        <section class="panel" id="panelRight">
-          <div class="panel-header">
-            <div>SIMULATION VIEWPORT // <span id="currentGameTitle">IDLE</span></div>
-            <div id="currentGameMeta">NO SIMULATION DEPLOYED</div>
-          </div>
-
-          <div class="panel-body">
-            <div class="game-viewport" id="gameViewport">
-
-              <!-- This is where games OR the creator iframe will load -->
-              <div class="viewport-inner" id="viewportInner">
-                SELECT A GAME FROM THE GRID.
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-      </div>
-    </main>
-
-  </div> <!-- END APP SHELL -->
-
-</body>
   <script>
-// ===============================
-//  GALAXIA BLOX 2.0 CORE ENGINE
-// ===============================
+    // ===============================
+    //  GALAXIA BLOX 2.0 CORE ENGINE
+    // ===============================
 
-// Utility: generate session ID
-function generateSessionId() {
-  return "GX-" + Math.floor(Math.random() * 9000 + 1000);
-}
-
-// Load or create session ID
-if (!localStorage.getItem("galaxia_session")) {
-  localStorage.setItem("galaxia_session", generateSessionId());
-}
-document.getElementById("sessionId").textContent =
-  localStorage.getItem("galaxia_session");
-
-// ===============================
-//  PLAYER DATA SYSTEM
-// ===============================
-let player = JSON.parse(localStorage.getItem("galaxia_player")) || {
-  xp: 0,
-  level: 1,
-  bestScore: 0,
-  sessions: 1,
-  multiplier: 1.0,
-};
-
-function savePlayer() {
-  localStorage.setItem("galaxia_player", JSON.stringify(player));
-}
-
-// Update UI
-function updatePlayerUI() {
-  document.getElementById("xpFill").style.width =
-    (player.xp % 100) + "%";
-  document.getElementById("xpText").textContent =
-    "XP: " + (player.xp % 100) + " / 100";
-  document.getElementById("levelText").textContent =
-    "LVL " + player.level;
-
-  document.getElementById("statBest").textContent = player.bestScore;
-  document.getElementById("statSessions").textContent = player.sessions;
-  document.getElementById("statMultiplier").textContent =
-    player.multiplier.toFixed(1) + "x";
-}
-updatePlayerUI();
-
-// XP Gain
-function addXP(amount) {
-  player.xp += amount;
-  if (player.xp >= player.level * 100) {
-    player.level++;
-  }
-  savePlayer();
-  updatePlayerUI();
-}
-
-// ===============================
-//  NAVIGATION SYSTEM
-// ===============================
-const navButtons = document.querySelectorAll(".nav-btn");
-const mainSubtitle = document.getElementById("mainSubtitle");
-
-navButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    navButtons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-
-    const view = btn.dataset.view;
-
-    if (view === "hub") {
-      mainSubtitle.textContent = "SELECT A SIMULATION";
-      document.getElementById("panelLeft").style.display = "flex";
-      document.getElementById("panelRight").style.display = "flex";
+    // Utility: generate session ID
+    function generateSessionId() {
+      return "GX-" + Math.floor(Math.random() * 9000 + 1000);
     }
 
-    if (view === "profile") {
-      mainSubtitle.textContent = "PILOT PROFILE";
-      document.getElementById("panelLeft").style.display = "none";
-      document.getElementById("panelRight").style.display = "none";
+    // Load or create session ID
+    if (!localStorage.getItem("galaxia_session")) {
+      localStorage.setItem("galaxia_session", generateSessionId());
     }
+    document.getElementById("sessionId").textContent =
+      "SESSION: " + localStorage.getItem("galaxia_session");
 
-    if (view === "log") {
-      mainSubtitle.textContent = "SESSION LOG";
-      document.getElementById("panelLeft").style.display = "none";
-      document.getElementById("panelRight").style.display = "none";
-    }
-
-    if (view === "creator") {
-      loadCreator();
-    }
-  });
-});
-
-// ===============================
-//  GAME GRID SYSTEM
-// ===============================
-const gameGrid = document.getElementById("gameGrid");
-
-// Built‑in games (inline mode)
-const builtInGames = [
-  {
-    id: "clicker",
-    title: "CLICKER",
-    tagline: "FAST TAPS",
-    xp: 10,
-  },
-  {
-    id: "dodge",
-    title: "DODGE",
-    tagline: "REACTION TEST",
-    xp: 15,
-  },
-  {
-    id: "reaction",
-    title: "REACTION",
-    tagline: "TIMING",
-    xp: 12,
-  },
-  {
-    id: "idle",
-    title: "IDLE",
-    tagline: "PASSIVE GAIN",
-    xp: 5,
-  },
-  {
-    id: "cube",
-    title: "3D CUBE",
-    tagline: "VISUALIZER",
-    xp: 8,
-  }
-];
-
-// User‑published games
-let userGames = JSON.parse(localStorage.getItem("galaxia_user_games")) || [];
-
-function saveUserGames() {
-  localStorage.setItem("galaxia_user_games", JSON.stringify(userGames));
-}
-
-// Build grid
-function rebuildGrid() {
-  gameGrid.innerHTML = "";
-
-  [...builtInGames, ...userGames].forEach(game => {
-    const card = document.createElement("div");
-    card.className = "game-card";
-    card.innerHTML = `
-      <div class="game-title">${game.title}</div>
-      <div class="game-tagline">${game.tagline}</div>
-      <div class="game-meta">
-        <span class="badge">${game.xp} XP</span>
-        <span>ID: ${game.id}</span>
-      </div>
-    `;
-    card.addEventListener("click", () => loadGame(game));
-    gameGrid.appendChild(card);
-  });
-
-  document.getElementById("statGames").textContent =
-    builtInGames.length + userGames.length;
-}
-rebuildGrid();
-
-// ===============================
-//  VIEWPORT LOADING
-// ===============================
-const viewport = document.getElementById("viewportInner");
-const gameTitle = document.getElementById("currentGameTitle");
-const gameMeta = document.getElementById("currentGameMeta");
-
-function loadGame(game) {
-  gameTitle.textContent = game.title;
-  gameMeta.textContent = "LOADING SIMULATION...";
-
-  // Inline game loader (actual game code comes in Part 3B)
-  viewport.innerHTML = `<div id="gameContainer"></div>`;
-
-  // Load the game engine later
-  setTimeout(() => {
-    runGame(game.id);
-    gameMeta.textContent = "SIMULATION ACTIVE";
-  }, 200);
-}
-
-// ===============================
-//  CREATOR IFRAME LOADING
-// ===============================
-function loadCreator() {
-  gameTitle.textContent = "GAME CREATOR";
-  gameMeta.textContent = "GALAXIA STUDIO PRO";
-
-  viewport.innerHTML = `
-    <iframe id="creatorFrame" src="creator.html"></iframe>
-  `;
-}
-<script>
-// ==============================
-// GALAXIA BLOX 2.0 CORE ENGINE
-// ==============================
-
-// ===============================
-//  GALAXIA BLOX 2.0 CORE ENGINE
-// ===============================
-
-// Utility: generate session ID
-function generateSessionId() {
-  return "GX-" + Math.floor(Math.random() * 9000 + 1000);
-}
-
-// Load or create session ID
-if (!localStorage.getItem("galaxia_session")) {
-  localStorage.setItem("galaxia_session", generateSessionId());
-}
-document.getElementById("sessionId").textContent =
-  localStorage.getItem("galaxia_session");
-
-// ===============================
-//  PLAYER DATA SYSTEM
-// ===============================
-let player = JSON.parse(localStorage.getItem("galaxia_player")) || {
-  xp: 0,
-  level: 1,
-  bestScore: 0,
-  sessions: 1,
-  multiplier: 1.0,
-};
-
-function savePlayer() {
-  localStorage.setItem("galaxia_player", JSON.stringify(player));
-}
-
-function updatePlayerUI() {
-  document.getElementById("xpFill").style.width =
-    (player.xp % 100) + "%";
-  document.getElementById("xpText").textContent =
-    "XP: " + (player.xp % 100) + " / 100";
-  document.getElementById("levelText").textContent =
-    "LVL " + player.level;
-
-  document.getElementById("statBest").textContent = player.bestScore;
-  document.getElementById("statSessions").textContent = player.sessions;
-  document.getElementById("statMultiplier").textContent =
-    player.multiplier.toFixed(1) + "x";
-}
-updatePlayerUI();
-
-function addXP(amount) {
-  player.xp += amount;
-  if (player.xp >= player.level * 100) {
-    player.level++;
-  }
-  savePlayer();
-  updatePlayerUI();
-}
-
-// ===============================
-//  NAVIGATION SYSTEM
-// ===============================
-const navButtons = document.querySelectorAll(".nav-btn");
-const mainSubtitle = document.getElementById("mainSubtitle");
-
-navButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    navButtons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-
-    const view = btn.dataset.view;
-
-    if (view === "hub") {
-      mainSubtitle.textContent = "SELECT A SIMULATION";
-      document.getElementById("panelLeft").style.display = "flex";
-      document.getElementById("panelRight").style.display = "flex";
-    }
-
-    if (view === "profile") {
-      mainSubtitle.textContent = "PILOT PROFILE";
-      document.getElementById("panelLeft").style.display = "none";
-      document.getElementById("panelRight").style.display = "none";
-    }
-
-    if (view === "log") {
-      mainSubtitle.textContent = "SESSION LOG";
-      document.getElementById("panelLeft").style.display = "none";
-      document.getElementById("panelRight").style.display = "none";
-    }
-
-    if (view === "creator") {
-      loadCreator();
-    }
-  });
-});
-
-// ===============================
-//  GAME GRID SYSTEM
-// ===============================
-const gameGrid = document.getElementById("gameGrid");
-
-const builtInGames = [
-  { id: "clicker", title: "CLICKER", tagline: "FAST TAPS", xp: 10 },
-  { id: "dodge", title: "DODGE", tagline: "REACTION TEST", xp: 15 },
-  { id: "reaction", title: "REACTION", tagline: "TIMING", xp: 12 },
-  { id: "idle", title: "IDLE", tagline: "PASSIVE GAIN", xp: 5 },
-  { id: "cube", title: "3D CUBE", tagline: "VISUALIZER", xp: 8 }
-];
-
-let userGames = JSON.parse(localStorage.getItem("galaxia_user_games")) || [];
-
-function saveUserGames() {
-  localStorage.setItem("galaxia_user_games", JSON.stringify(userGames));
-}
-
-function rebuildGrid() {
-  gameGrid.innerHTML = "";
-
-  [...builtInGames, ...userGames].forEach(game => {
-    const card = document.createElement("div");
-    card.className = "game-card";
-    card.innerHTML = `
-      <div class="game-title">${game.title}</div>
-      <div class="game-tagline">${game.tagline}</div>
-      <div class="game-meta">
-        <span class="badge">${game.xp} XP</span>
-        <span>ID: ${game.id}</span>
-      </div>
-    `;
-    card.addEventListener("click", () => loadGame(game));
-    gameGrid.appendChild(card);
-  });
-
-  document.getElementById("statGames").textContent =
-    builtInGames.length + userGames.length;
-}
-rebuildGrid();
-
-// ===============================
-//  VIEWPORT LOADING
-// ===============================
-const viewport = document.getElementById("viewportInner");
-const gameTitle = document.getElementById("currentGameTitle");
-const gameMeta = document.getElementById("currentGameMeta");
-
-function loadGame(game) {
-  gameTitle.textContent = game.title;
-  gameMeta.textContent = "LOADING SIMULATION...";
-  viewport.innerHTML = `<div id="gameContainer"></div>`;
-
-  setTimeout(() => {
-    runGame(game.id);
-    gameMeta.textContent = "SIMULATION ACTIVE";
-  }, 200);
-}
-
-// ===============================
-//  CREATOR IFRAME LOADING
-// ===============================
-function loadCreator() {
-  gameTitle.textContent = "GAME CREATOR";
-  gameMeta.textContent = "GALAXIA STUDIO PRO";
-  viewport.innerHTML = `<iframe id="creatorFrame" src="creator.html"></iframe>`;
-}
-// ===============================
-//  BUILT-IN GAME ENGINES
-// ===============================
-
-function runGame(id) {
-  const container = document.getElementById("gameContainer");
-  container.innerHTML = "";
-
-  // -------------------------------
-  // CLICKER
-  // -------------------------------
-  if (id === "clicker") {
-    let score = 0;
-    const btn = document.createElement("button");
-    btn.textContent = "CLICK ME";
-    btn.style.padding = "20px";
-    btn.style.fontSize = "20px";
-
-    btn.onclick = () => {
-      score++;
-      btn.textContent = "SCORE: " + score;
-
-      if (score % 10 === 0) addXP(10);
-
-      if (score > player.bestScore) {
-        player.bestScore = score;
-        savePlayer();
-        updatePlayerUI();
-      }
+    // ===============================
+    //  PLAYER DATA SYSTEM
+    // ===============================
+    let player = JSON.parse(localStorage.getItem("galaxia_player")) || {
+      xp: 0,
+      level: 1,
+      bestScore: 0,
+      sessions: 1,
+      multiplier: 1.0,
     };
 
-    container.appendChild(btn);
-  }
+    function savePlayer() {
+      localStorage.setItem("galaxia_player", JSON.stringify(player));
+    }
 
-  // -------------------------------
-  // DODGE
-  // -------------------------------
-  if (id === "dodge") {
-    let score = 0;
+    function updatePlayerUI() {
+      document.getElementById("xpFill").style.width =
+        (player.xp % 100) + "%";
+      document.getElementById("xpText").textContent =
+        "XP: " + (player.xp % 100) + " / 100";
+      document.getElementById("levelText").textContent =
+        "LVL " + player.level;
 
-    const box = document.createElement("div");
-    box.style.width = "100%";
-    box.style.height = "200px";
-    box.style.position = "relative";
-    box.style.background = "#111";
+      document.getElementById("statBest").textContent = player.bestScore;
+      document.getElementById("statSessions").textContent = player.sessions;
+      document.getElementById("statMultiplier").textContent =
+        player.multiplier.toFixed(1) + "x";
+    }
+    updatePlayerUI();
 
-    const playerBox = document.createElement("div");
-    playerBox.style.width = "30px";
-    playerBox.style.height = "30px";
-    playerBox.style.background = "#0ff";
-    playerBox.style.position = "absolute";
-    playerBox.style.left = "50%";
-    playerBox.style.bottom = "0";
+    function addXP(amount) {
+      player.xp += amount;
+      if (player.xp >= player.level * 100) {
+        player.level++;
+      }
+      savePlayer();
+      updatePlayerUI();
+    }
 
-    box.appendChild(playerBox);
-    container.appendChild(box);
+    // ===============================
+    //  NAVIGATION SYSTEM
+    // ===============================
+    const navButtons = document.querySelectorAll(".nav-btn");
+    const mainSubtitle = document.getElementById("mainSubtitle");
+    const panelLeft = document.getElementById("panelLeft");
+    const panelRight = document.getElementById("panelRight");
 
-    document.addEventListener("keydown", e => {
-      if (e.key === "ArrowLeft") playerBox.style.left = "40%";
-      if (e.key === "ArrowRight") playerBox.style.left = "60%";
+    navButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        navButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const view = btn.dataset.view;
+
+        if (view === "hub") {
+          mainSubtitle.textContent = "SELECT A SIMULATION";
+          panelLeft.style.display = "flex";
+          panelRight.style.display = "flex";
+        }
+
+        if (view === "profile") {
+          mainSubtitle.textContent = "PILOT PROFILE";
+          panelLeft.style.display = "none";
+          panelRight.style.display = "none";
+        }
+
+        if (view === "log") {
+          mainSubtitle.textContent = "SESSION LOG";
+          panelLeft.style.display = "none";
+          panelRight.style.display = "none";
+        }
+
+        if (view === "creator") {
+          loadCreator();
+        }
+      });
     });
 
-    const enemy = document.createElement("div");
-    enemy.style.width = "30px";
-    enemy.style.height = "30px";
-    enemy.style.background = "#f00";
-    enemy.style.position = "absolute";
-    enemy.style.left = "50%";
-    enemy.style.top = "0";
+    // ===============================
+    //  GAME GRID SYSTEM
+    // ===============================
+    const gameGrid = document.getElementById("gameGrid");
 
-    box.appendChild(enemy);
+    const builtInGames = [
+      { id: "clicker", title: "CLICKER", tagline: "FAST TAPS", xp: 10 },
+      { id: "dodge", title: "DODGE", tagline: "REACTION TEST", xp: 15 },
+      { id: "reaction", title: "REACTION", tagline: "TIMING", xp: 12 },
+      { id: "idle", title: "IDLE", tagline: "PASSIVE GAIN", xp: 5 },
+      { id: "cube", title: "3D CUBE", tagline: "VISUALIZER", xp: 8 }
+    ];
 
-    const interval = setInterval(() => {
-      let top = parseInt(enemy.style.top);
-      top += 10;
-      enemy.style.top = top + "px";
+    let userGames = JSON.parse(localStorage.getItem("galaxia_user_games")) || [];
 
-      if (top >= 170) {
-        clearInterval(interval);
-        container.innerHTML = "GAME OVER — SCORE: " + score;
-        addXP(score);
+    function saveUserGames() {
+      localStorage.setItem("galaxia_user_games", JSON.stringify(userGames));
+    }
 
-        if (score > player.bestScore) {
-          player.bestScore = score;
-          savePlayer();
-          updatePlayerUI();
-        }
-      } else {
-        score++;
-      }
-    }, 200);
-  }
+    function rebuildGrid() {
+      gameGrid.innerHTML = "";
 
-  // -------------------------------
-  // REACTION
-  // -------------------------------
-  if (id === "reaction") {
-    container.innerHTML = "WAIT FOR GREEN...";
+      [...builtInGames, ...userGames].forEach(game => {
+        const card = document.createElement("div");
+        card.className = "game-card";
+        card.innerHTML = `
+          <div class="game-title">${game.title}</div>
+          <div class="game-tagline">${game.tagline}</div>
+          <div class="game-meta">
+            <span class="badge">${game.xp} XP</span>
+            <span>ID: ${game.id}</span>
+          </div>
+        `;
+        card.addEventListener("click", () => loadGame(game));
+        gameGrid.appendChild(card);
+      });
 
-    setTimeout(() => {
-      container.innerHTML = "";
-
-      const btn = document.createElement("button");
-      btn.textContent = "CLICK FAST!";
-      btn.style.padding = "20px";
-      btn.style.fontSize = "20px";
-
-      const start = Date.now();
-
-      btn.onclick = () => {
-        const time = Date.now() - start;
-        container.innerHTML = "REACTION TIME: " + time + "ms";
-
-        addXP(Math.max(1, 1000 - time));
-
-        if (1000 - time > player.bestScore) {
-          player.bestScore = 1000 - time;
-          savePlayer();
-          updatePlayerUI();
-        }
-      };
-
-      container.appendChild(btn);
-    }, Math.random() * 3000 + 1000);
-  }
-
-  // -------------------------------
-  // IDLE
-  // -------------------------------
-  if (id === "idle") {
-    let score = 0;
-
-    container.innerHTML = "IDLE MODE ACTIVE<br><br>";
-
-    const scoreDisplay = document.createElement("div");
-    scoreDisplay.textContent = "SCORE: 0";
-    container.appendChild(scoreDisplay);
-
-    const interval = setInterval(() => {
-      score++;
-      scoreDisplay.textContent = "SCORE: " + score;
-
-      addXP(1);
-
-      if (score > player.bestScore) {
-        player.bestScore = score;
-        savePlayer();
-        updatePlayerUI();
-      }
-
-      if (score >= 100) clearInterval(interval);
-    }, 1000);
-  }
-
-  // -------------------------------
-  // 3D CUBE
-  // -------------------------------
-  if (id === "cube") {
-    container.innerHTML = `
-      <style>
-        .cube {
-          width: 100px;
-          height: 100px;
-          background: linear-gradient(45deg, #00e5ff, #0066ff);
-          animation: spin 2s infinite linear;
-          margin: auto;
-          margin-top: 40px;
-        }
-        @keyframes spin {
-          0% { transform: rotateY(0deg); }
-          100% { transform: rotateY(360deg); }
-        }
-      </style>
-      <div class="cube"></div>
-    `;
-
-    addXP(8);
-  }
-}
-// ===============================
-//  VIEWPORT ENGINE + CREATOR INTEGRATION
-// ===============================
-
-// Turbo Mode (optional fade effect)
-let turboMode = false;
-
-function enableTurboMode() {
-  turboMode = true;
-  document.body.style.transition = "opacity 0.3s ease-in-out";
-  document.body.style.opacity = "0.6";
-  setTimeout(() => {
-    document.body.style.opacity = "1";
-  }, 300);
-}
-
-// Smooth viewport switching
-function switchViewport(contentHTML) {
-  if (turboMode) {
-    viewport.style.opacity = "0";
-    setTimeout(() => {
-      viewport.innerHTML = contentHTML;
-      viewport.style.opacity = "1";
-    }, 200);
-  } else {
-    viewport.innerHTML = contentHTML;
-  }
-}
-
-// Creator button logic
-document.getElementById("creatorBtn").addEventListener("click", () => {
-  loadCreator();
-});
-
-// Load the creator iframe
-function loadCreator() {
-  gameTitle.textContent = "GAME CREATOR";
-  gameMeta.textContent = "GALAXIA STUDIO PRO";
-
-  switchViewport(`
-    <iframe id="creatorFrame" src="creator.html"></iframe>
-  `);
-}
-
-// Publish system (actual logic in Part 3D)
-function publishGame(gameData) {
-  userGames.push(gameData);
-  saveUserGames();
-  rebuildGrid();
-  addXP(20);
-}
-// ===============================
-//  PUBLISH SYSTEM (FINAL ENGINE)
-// ===============================
-
-// Listen for messages sent from creator.html
-window.addEventListener("message", event => {
-  // Safety check: only accept objects
-  if (!event.data || typeof event.data !== "object") return;
-
-  // Only accept publish messages
-  if (event.data.type === "publishGame") {
-    const game = event.data.payload;
-
-    // Add to user games
-    userGames.push(game);
-    saveUserGames();
+      document.getElementById("statGames").textContent =
+        builtInGames.length + userGames.length;
+    }
     rebuildGrid();
 
-    // XP reward for publishing
-    addXP(25);
+    // ===============================
+    //  VIEWPORT LOADING
+    // ===============================
+    const viewport = document.getElementById("viewportInner");
+    const gameTitle = document.getElementById("currentGameTitle");
+    const gameMeta = document.getElementById("currentGameMeta");
 
-    // Feedback in viewport
-    gameTitle.textContent = "GAME PUBLISHED";
-    gameMeta.textContent = "ADDED TO ARCADE GRID";
+    function loadGame(game) {
+      gameTitle.textContent = game.title;
+      gameMeta.textContent = "LOADING SIMULATION...";
+      viewport.innerHTML = `<div id="gameContainer"></div>`;
 
-    viewport.innerHTML = `
-      <div style="padding:20px; text-align:center;">
-        <h2 style="color:var(--accent);">GAME PUBLISHED!</h2>
-        <p>Your game <strong>${game.title}</strong> is now available in the grid.</p>
-        <p>ID: <strong>${game.id}</strong></p>
-      </div>
-    `;
-  }
-});
+      setTimeout(() => {
+        runGame(game.id);
+        gameMeta.textContent = "SIMULATION ACTIVE";
+      }, 200);
+    }
 
-// Helper function for creator.html to call
-function publishGame(gameData) {
-  userGames.push(gameData);
-  saveUserGames();
-  rebuildGrid();
-  addXP(20);
-}    
-</script>
+    // ===============================
+    //  BUILT-IN GAME ENGINES
+    // ===============================
+    function runGame(id) {
+      const container = document.getElementById("gameContainer");
+      if (!container) return;
+      container.innerHTML = "";
+
+      // CLICKER
+      if (id === "clicker") {
+        let score = 0;
+        const btn = document.createElement("button");
+        btn.textContent = "CLICK ME";
+        btn.style.padding = "20px";
+        btn.style.fontSize = "20px";
+
+        btn.onclick = () => {
+          score++;
+          btn.textContent = "SCORE: " + score;
+
+          if (score % 10 === 0) addXP(10);
+
+          if (score > player.bestScore) {
+            player.bestScore = score;
+            savePlayer();
+            updatePlayerUI();
+          }
+        };
+
+        container.appendChild(btn);
+      }
+
+      // DODGE
+      if (id === "dodge") {
+        let score = 0;
+
+        const box = document.createElement("div");
+        box.style.width = "100%";
+        box.style.height = "200px";
+        box.style.position = "relative";
+        box.style.background = "#111";
+
+        const playerBox = document.createElement("div");
+        playerBox.style.width = "30px";
+        playerBox.style.height = "30px";
+        playerBox.style.background = "#0ff";
+        playerBox.style.position = "absolute";
+        playerBox.style.left = "50%";
+        playerBox.style.bottom = "0";
+
+        box.appendChild(playerBox);
+        container.appendChild(box);
+
+        function movePlayer(dir) {
+          const current = parseInt(playerBox.style.left);
+          if (dir === "left") playerBox.style.left = Math.max(10, current - 10) + "%";
+          if (dir === "right") playerBox.style.left = Math.min(90, current + 10) + "%";
+        }
+
+        const keyHandler = e => {
+          if (e.key === "ArrowLeft") movePlayer("left");
+          if (e.key === "ArrowRight") movePlayer("right");
+        };
+        document.addEventListener("keydown", keyHandler);
+
+        const enemy = document.createElement("div");
+        enemy.style.width = "30px";
+        enemy.style.height = "30px";
+        enemy.style.background = "#f00";
+        enemy.style.position = "absolute";
+        enemy.style.left = "50%";
+        enemy.style.top = "0";
+
+        box.appendChild(enemy);
+
+        const interval = setInterval(() => {
+          let top = parseInt(enemy.style.top);
+          top += 10;
+          enemy.style.top = top + "px";
+
+          if (top >= 170) {
+            clearInterval(interval);
+            document.removeEventListener("keydown", keyHandler);
+            container.innerHTML = "GAME OVER — SCORE: " + score;
+            addXP(score);
+
+            if (score > player.bestScore) {
+              player.bestScore = score;
+              savePlayer();
+              updatePlayerUI();
+            }
+          } else {
+            score++;
+          }
+        }, 200);
+      }
+
+      // REACTION
+      if (id === "reaction") {
+        container.innerHTML = "WAIT FOR GREEN...";
+
+        setTimeout(() => {
+          container.innerHTML = "";
+
+          const btn = document.createElement("button");
+          btn.textContent = "CLICK FAST!";
+          btn.style.padding = "20px";
+          btn.style.fontSize = "20px";
+
+          const start = Date.now();
+
+          btn.onclick = () => {
+            const time = Date.now() - start;
+            container.innerHTML = "REACTION TIME: " + time + "ms";
+
+            addXP(Math.max(1, 1000 - time));
+
+            if (1000 - time > player.bestScore) {
+              player.bestScore = 1000 - time;
+              savePlayer();
+              updatePlayerUI();
+            }
+          };
+
+          container.appendChild(btn);
+        }, Math.random() * 3000 + 1000);
+      }
+
+      // IDLE
+      if (id === "idle") {
+        let score = 0;
+
+        container.innerHTML = "IDLE MODE ACTIVE<br><br>";
+
+        const scoreDisplay = document.createElement("div");
+        scoreDisplay.textContent = "SCORE: 0";
+        container.appendChild(scoreDisplay);
+
+        const interval = setInterval(() => {
+          score++;
+          scoreDisplay.textContent = "SCORE: " + score;
+
+          addXP(1);
+
+          if (score > player.bestScore) {
+            player.bestScore = score;
+            savePlayer();
+            updatePlayerUI();
+          }
+
+          if (score >= 100) clearInterval(interval);
+        }, 1000);
+      }
+
+      // 3D CUBE
+      if (id === "cube") {
+        container.innerHTML = `
+          <style>
+            .cube {
+              width: 100px;
+              height: 100px;
+              background: linear-gradient(45deg, #00e5ff, #0066ff);
+              animation: spin 2s infinite linear;
+              margin: auto;
+              margin-top: 40px;
+            }
+            @keyframes spin {
+              0% { transform: rotateY(0deg); }
+              100% { transform: rotateY(360deg); }
+            }
+          </style>
+          <div class="cube"></div>
+        `;
+
+        addXP(8);
+      }
+
+      // USER-CREATED GAMES
+      const custom = userGames.find(g => g.id === id);
+      if (custom) {
+        try {
+          const fn = new Function(`
+            const container = document.getElementById("gameContainer");
+            if (!container) return;
+            container.innerHTML = "";
+            ${custom.code}
+          `);
+          fn();
+        } catch (err) {
+          container.innerHTML = "ERROR IN GAME CODE:<br>" + err;
+        }
+      }
+    }
+
+    // ===============================
+    //  VIEWPORT ENGINE + CREATOR INTEGRATION
+    // ===============================
+    let turboMode = false;
+
+    function enableTurboMode() {
+      turboMode = true;
+      document.body.style.transition = "opacity 0.3s ease-in-out";
+      document.body.style.opacity = "0.6";
+      setTimeout(() => {
+        document.body.style.opacity = "1";
+      }, 300);
+    }
+
+    function switchViewport(contentHTML) {
+      if (turboMode) {
+        viewport.style.opacity = "0";
+        setTimeout(() => {
+          viewport.innerHTML = contentHTML;
+          viewport.style.opacity = "1";
+        }, 200);
+      } else {
+        viewport.innerHTML = contentHTML;
+      }
+    }
+
+    document.getElementById("creatorBtn").addEventListener("click", () => {
+      loadCreator();
+    });
+
+    function loadCreator() {
+      gameTitle.textContent = "GAME CREATOR";
+      gameMeta.textContent = "GALAXIA STUDIO PRO";
+
+      switchViewport(`
+        <iframe id="creatorFrame" src="creator.html"></iframe>
+      `);
+    }
+
+    function publishGame(gameData) {
+      userGames.push(gameData);
+      saveUserGames();
+      rebuildGrid();
+      addXP(20);
+    }
+
+    // ===============================
+    //  PUBLISH SYSTEM (FINAL ENGINE)
+    // ===============================
+    window.addEventListener("message", event => {
+      if (!event.data || typeof event.data !== "object") return;
+
+      if (event.data.type === "publishGame") {
+        const game = event.data.payload;
+
+        userGames.push(game);
+        saveUserGames();
+        rebuildGrid();
+
+        addXP(25);
+
+        gameTitle.textContent = "GAME PUBLISHED";
+        gameMeta.textContent = "ADDED TO ARCADE GRID";
+
+        viewport.innerHTML = `
+          <div style="padding:20px; text-align:center;">
+            <h2 style="color:var(--accent);">GAME PUBLISHED!</h2>
+            <p>Your game <strong>${game.title}</strong> is now available in the grid.</p>
+            <p>ID: <strong>${game.id}</strong></p>
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
