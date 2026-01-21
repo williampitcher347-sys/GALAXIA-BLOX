@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Galaxia OS — Hyper Arcade</title>
+  <meta charset="UTF-8" />
+  <title>GALAXIA OS — A2 HYPER BUILD</title>
 
   <style>
     :root {
@@ -10,28 +10,43 @@
       --panel: #050816;
       --accent: #00e5ff;
       --accent-soft: #0099ff;
+      --accent-strong: #33f5ff;
       --text: #e6f7ff;
       --muted: #7a8ca5;
       --danger: #ff3366;
-      --border-glow: 0 0 16px rgba(0, 229, 255, 0.9);
+      --border-glow: 0 0 18px rgba(0, 229, 255, 0.9);
+      --border-glow-soft: 0 0 10px rgba(0, 229, 255, 0.5);
+      --shadow-deep: 0 0 40px rgba(0, 0, 0, 0.9);
     }
 
     * {
       box-sizing: border-box;
     }
 
-    body {
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: radial-gradient(circle at top, #041b3b 0, #02030a 40%, #000 100%);
       color: var(--text);
       overflow: hidden;
     }
 
-    /* Heavy starfield */
-    #starfield {
+    /* ===========================
+       STARFIELD + BACKDROP
+       =========================== */
+    #starfield-layer-1,
+    #starfield-layer-2,
+    #starfield-layer-3 {
       position: fixed;
       inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #starfield-layer-1 {
       background:
         radial-gradient(circle, rgba(0,229,255,0.8) 0, transparent 60%) 5% 10% / 2px 2px no-repeat,
         radial-gradient(circle, rgba(0,229,255,0.6) 0, transparent 60%) 15% 80% / 2px 2px no-repeat,
@@ -43,18 +58,60 @@
         radial-gradient(circle, rgba(0,229,255,0.9) 0, transparent 60%) 75% 90% / 2px 2px no-repeat,
         radial-gradient(circle, rgba(0,229,255,0.7) 0, transparent 60%) 85% 50% / 2px 2px no-repeat,
         radial-gradient(circle, rgba(0,229,255,0.8) 0, transparent 60%) 95% 30% / 2px 2px no-repeat;
-      animation: starDrift 12s linear infinite;
-      opacity: 0.95;
+      animation: starDrift1 40s linear infinite;
+      opacity: 0.9;
+    }
+
+    #starfield-layer-2 {
+      background:
+        radial-gradient(circle, rgba(0,229,255,0.4) 0, transparent 60%) 10% 20% / 3px 3px no-repeat,
+        radial-gradient(circle, rgba(0,229,255,0.5) 0, transparent 60%) 30% 70% / 3px 3px no-repeat,
+        radial-gradient(circle, rgba(0,229,255,0.4) 0, transparent 60%) 50% 40% / 3px 3px no-repeat,
+        radial-gradient(circle, rgba(0,229,255,0.5) 0, transparent 60%) 70% 80% / 3px 3px no-repeat,
+        radial-gradient(circle, rgba(0,229,255,0.4) 0, transparent 60%) 90% 30% / 3px 3px no-repeat;
+      animation: starDrift2 70s linear infinite;
+      opacity: 0.7;
+    }
+
+    #starfield-layer-3 {
+      background:
+        radial-gradient(circle, rgba(0,229,255,0.25) 0, transparent 60%) 20% 10% / 4px 4px no-repeat,
+        radial-gradient(circle, rgba(0,229,255,0.25) 0, transparent 60%) 40% 90% / 4px 4px no-repeat,
+        radial-gradient(circle, rgba(0,229,255,0.25) 0, transparent 60%) 60% 30% / 4px 4px no-repeat,
+        radial-gradient(circle, rgba(0,229,255,0.25) 0, transparent 60%) 80% 60% / 4px 4px no-repeat;
+      animation: starDrift3 110s linear infinite;
+      opacity: 0.5;
+    }
+
+    @keyframes starDrift1 {
+      0% { transform: translate3d(0,0,0); }
+      100% { transform: translate3d(-200px, -260px, 0); }
+    }
+
+    @keyframes starDrift2 {
+      0% { transform: translate3d(0,0,0); }
+      100% { transform: translate3d(160px, -180px, 0); }
+    }
+
+    @keyframes starDrift3 {
+      0% { transform: translate3d(0,0,0); }
+      100% { transform: translate3d(-120px, 200px, 0); }
+    }
+
+    /* Vignette overlay */
+    #vignette {
+      position: fixed;
+      inset: 0;
       pointer-events: none;
       z-index: 0;
+      background:
+        radial-gradient(circle at center, transparent 0, transparent 40%, rgba(0,0,0,0.7) 100%);
+      mix-blend-mode: multiply;
     }
 
-    @keyframes starDrift {
-      0% { transform: translate3d(0,0,0); }
-      100% { transform: translate3d(-160px, -220px, 0); }
-    }
-
-    /* Shell */
+    /* ===========================
+       SHELL + BOOT
+       =========================== */
     #shell {
       position: relative;
       z-index: 1;
@@ -63,25 +120,75 @@
       height: 100vh;
       padding: 16px;
       gap: 10px;
+      opacity: 0;
+      transform: translateY(10px) scale(0.99);
+      animation: shellBoot 0.9s ease-out forwards 0.6s;
     }
 
-    /* Top bar */
+    @keyframes shellBoot {
+      0% {
+        opacity: 0;
+        transform: translateY(18px) scale(0.96);
+        filter: blur(4px);
+      }
+      60% {
+        opacity: 1;
+        transform: translateY(0) scale(1.01);
+        filter: blur(0);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* ===========================
+       TOP BAR
+       =========================== */
     #topBar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 10px 16px;
-      background: linear-gradient(90deg, rgba(0,0,0,0.85), rgba(0,20,40,0.95));
-      border-radius: 12px;
-      border: 1px solid rgba(0,229,255,0.6);
-      box-shadow: var(--border-glow);
-      backdrop-filter: blur(10px);
+      background:
+        radial-gradient(circle at top left, rgba(0,229,255,0.18), transparent 60%),
+        linear-gradient(90deg, rgba(0,0,0,0.9), rgba(0,20,40,0.98));
+      border-radius: 14px;
+      border: 1px solid rgba(0,229,255,0.7);
+      box-shadow: var(--border-glow), var(--shadow-deep);
+      backdrop-filter: blur(14px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #topBar::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: conic-gradient(
+        from 0deg,
+        rgba(0,229,255,0.0),
+        rgba(0,229,255,0.4),
+        rgba(0,229,255,0.0)
+      );
+      opacity: 0;
+      animation: topBarSweep 6s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes topBarSweep {
+      0% { opacity: 0; transform: rotate(0deg); }
+      20% { opacity: 0.4; }
+      50% { opacity: 0.1; }
+      100% { opacity: 0; transform: rotate(360deg); }
     }
 
     #titleBlock {
       display: flex;
       flex-direction: column;
       gap: 2px;
+      position: relative;
+      z-index: 1;
     }
 
     #mainTitle {
@@ -89,6 +196,7 @@
       letter-spacing: 0.18em;
       color: var(--accent);
       text-transform: uppercase;
+      text-shadow: 0 0 12px rgba(0,229,255,0.9);
     }
 
     #mainSubtitle {
@@ -101,10 +209,11 @@
       color: var(--muted);
     }
 
-    /* Nav bar */
     #navBar {
       display: flex;
       gap: 8px;
+      position: relative;
+      z-index: 1;
     }
 
     .nav-btn {
@@ -114,10 +223,32 @@
       letter-spacing: 0.14em;
       border-radius: 999px;
       border: 1px solid rgba(0,229,255,0.5);
-      background: radial-gradient(circle at top, rgba(0,229,255,0.2), rgba(0,0,0,0.95));
+      background:
+        radial-gradient(circle at top, rgba(0,229,255,0.2), rgba(0,0,0,0.95));
       color: var(--text);
       cursor: pointer;
-      transition: background 0.2s, transform 0.15s, box-shadow 0.2s, color 0.2s;
+      transition:
+        background 0.2s,
+        transform 0.15s,
+        box-shadow 0.2s,
+        color 0.2s,
+        border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-btn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.3), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+
+    .nav-btn:hover::before {
+      opacity: 0.4;
     }
 
     .nav-btn.active {
@@ -125,49 +256,65 @@
       box-shadow: 0 0 18px rgba(0,229,255,0.9);
       color: #000;
       transform: translateY(-1px);
+      border-color: var(--accent-strong);
     }
 
     .nav-btn:hover {
-      box-shadow: 0 0 12px rgba(0,229,255,0.7);
+      box-shadow: 0 0 14px rgba(0,229,255,0.8);
     }
 
-    /* Core layout */
+    /* ===========================
+       CORE LAYOUT
+       =========================== */
     #core {
       flex: 1;
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(260px, 0.9fr) minmax(380px, 1.4fr);
       gap: 10px;
       min-height: 0;
     }
 
     #panelLeft, #panelRight {
-      background: radial-gradient(circle at top left, rgba(0,229,255,0.18), rgba(0,0,0,0.96));
-      border-radius: 14px;
-      border: 1px solid rgba(0,229,255,0.6);
-      box-shadow: var(--border-glow);
+      background:
+        radial-gradient(circle at top left, rgba(0,229,255,0.18), transparent 60%),
+        radial-gradient(circle at bottom right, rgba(0,0,0,0.9), rgba(0,0,0,1));
+      border-radius: 16px;
+      border: 1px solid rgba(0,229,255,0.7);
+      box-shadow: var(--border-glow-soft), var(--shadow-deep);
       padding: 12px;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(18px);
+      position: relative;
+      overflow: hidden;
     }
 
-    #panelLeft {
-      flex: 1;
-      min-width: 0;
+    #panelLeft::before,
+    #panelRight::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: radial-gradient(circle, rgba(0,229,255,0.12), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
     }
 
-    #panelRight {
-      flex: 1.4;
-      min-width: 0;
+    #panelLeft:hover::before,
+    #panelRight:hover::before {
+      opacity: 1;
     }
 
-    /* Left panel: grid */
+    /* LEFT PANEL: GRID */
     #gridHeader {
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 12px;
       color: var(--muted);
+      position: relative;
+      z-index: 1;
     }
 
     #gridTitle {
@@ -187,27 +334,59 @@
       gap: 10px;
       overflow-y: auto;
       padding-right: 4px;
+      position: relative;
+      z-index: 1;
+    }
+
+    #gameGrid::-webkit-scrollbar {
+      width: 6px;
+    }
+    #gameGrid::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #gameGrid::-webkit-scrollbar-thumb {
+      background: rgba(0,229,255,0.5);
+      border-radius: 999px;
     }
 
     .game-card {
-      background: radial-gradient(circle at top, rgba(0,229,255,0.22), rgba(0,0,0,0.96));
-      border-radius: 10px;
+      background:
+        radial-gradient(circle at top, rgba(0,229,255,0.22), rgba(0,0,0,0.96));
+      border-radius: 12px;
       border: 1px solid rgba(0,229,255,0.6);
       padding: 10px;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       gap: 4px;
-      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s;
+      transition:
+        transform 0.15s,
+        box-shadow 0.15s,
+        border-color 0.15s,
+        background 0.15s;
       position: relative;
       overflow: hidden;
     }
 
+    .game-card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: radial-gradient(circle, rgba(0,229,255,0.18), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .game-card:hover::before {
+      opacity: 1;
+    }
+
     .game-card:hover {
-      transform: translateY(-2px);
+      transform: translateY(-2px) scale(1.01);
       box-shadow: 0 0 18px rgba(0,229,255,0.9);
       border-color: var(--accent);
-      background: radial-gradient(circle at top, rgba(0,229,255,0.3), rgba(0,0,0,0.96));
+      background:
+        radial-gradient(circle at top, rgba(0,229,255,0.3), rgba(0,0,0,0.96));
     }
 
     .game-title {
@@ -222,6 +401,15 @@
       color: var(--muted);
     }
 
+    .game-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
     .badge {
       padding: 2px 6px;
       border-radius: 999px;
@@ -231,13 +419,15 @@
       font-size: 10px;
     }
 
-    /* Right panel: viewport */
+    /* RIGHT PANEL: VIEWPORT */
     #viewportHeader {
       display: flex;
       justify-content: space-between;
       align-items: center;
       font-size: 12px;
       color: var(--muted);
+      position: relative;
+      z-index: 1;
     }
 
     #currentGameTitle {
@@ -247,11 +437,17 @@
       color: var(--accent);
     }
 
+    #currentGameMeta {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
     #viewportOuter {
       flex: 1;
-      border-radius: 10px;
-      border: 1px solid rgba(0,229,255,0.6);
-      background: radial-gradient(circle at top, rgba(0,229,255,0.18), rgba(0,0,0,0.96));
+      border-radius: 12px;
+      border: 1px solid rgba(0,229,255,0.7);
+      background:
+        radial-gradient(circle at top, rgba(0,229,255,0.18), rgba(0,0,0,0.96));
       overflow: hidden;
       position: relative;
       box-shadow: 0 0 18px rgba(0,229,255,0.7);
@@ -261,7 +457,7 @@
       position: absolute;
       inset: 0;
       padding: 10px;
-      transition: opacity 0.2s ease-in-out;
+      transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
     }
 
     #gameContainer {
@@ -276,18 +472,46 @@
       background: #000;
     }
 
-    /* Bottom bar */
+    /* ===========================
+       BOTTOM BAR
+       =========================== */
     #bottomBar {
       display: flex;
       gap: 10px;
       align-items: center;
       padding: 8px 12px;
-      background: linear-gradient(90deg, rgba(0,0,0,0.9), rgba(0,20,40,0.98));
-      border-radius: 12px;
-      border: 1px solid rgba(0,229,255,0.6);
-      box-shadow: var(--border-glow);
-      backdrop-filter: blur(10px);
+      background:
+        radial-gradient(circle at top left, rgba(0,229,255,0.18), transparent 60%),
+        linear-gradient(90deg, rgba(0,0,0,0.9), rgba(0,20,40,0.98));
+      border-radius: 14px;
+      border: 1px solid rgba(0,229,255,0.7);
+      box-shadow: var(--border-glow-soft), var(--shadow-deep);
+      backdrop-filter: blur(12px);
       font-size: 11px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #bottomBar::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: conic-gradient(
+        from 180deg,
+        rgba(0,229,255,0.0),
+        rgba(0,229,255,0.3),
+        rgba(0,229,255,0.0)
+      );
+      opacity: 0;
+      animation: bottomSweep 8s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes bottomSweep {
+      0% { opacity: 0; transform: rotate(0deg); }
+      30% { opacity: 0.4; }
+      60% { opacity: 0.1; }
+      100% { opacity: 0; transform: rotate(-360deg); }
     }
 
     #xpBarOuter {
@@ -306,7 +530,16 @@
       width: 0%;
       background: linear-gradient(90deg, #00e5ff, #0066ff);
       box-shadow: 0 0 14px rgba(0,229,255,0.9);
-      transition: width 0.2s ease-out;
+      transition: width 0.25s ease-out;
+    }
+
+    #xpBarOuter::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(255,255,255,0.2), transparent);
+      mix-blend-mode: screen;
+      opacity: 0.4;
     }
 
     #xpText {
@@ -342,31 +575,72 @@
       padding: 6px 14px;
       border-radius: 999px;
       border: 1px solid rgba(0,229,255,0.8);
-      background: radial-gradient(circle at top, rgba(0,229,255,0.3), rgba(0,0,0,0.96));
+      background:
+        radial-gradient(circle at top, rgba(0,229,255,0.3), rgba(0,0,0,0.96));
       color: var(--text);
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.14em;
       cursor: pointer;
       box-shadow: 0 0 18px rgba(0,229,255,0.9);
-      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+      transition:
+        transform 0.15s,
+        box-shadow 0.15s,
+        background 0.15s,
+        border-color 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #creatorBtn::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(255,255,255,0.4), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+    }
+
+    #creatorBtn:hover::before {
+      opacity: 0.6;
     }
 
     #creatorBtn:hover {
       transform: translateY(-1px);
       box-shadow: 0 0 22px rgba(0,229,255,1);
-      background: radial-gradient(circle at top, rgba(0,229,255,0.4), rgba(0,0,0,0.96));
+      background:
+        radial-gradient(circle at top, rgba(0,229,255,0.4), rgba(0,0,0,0.96));
+      border-color: var(--accent-strong);
+    }
+
+    /* ===========================
+       RESPONSIVE
+       =========================== */
+    @media (max-width: 900px) {
+      #core {
+        grid-template-columns: 1fr;
+      }
+      #panelLeft, #panelRight {
+        min-height: 0;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div id="starfield"></div>
+  <!-- STARFIELD -->
+  <div id="starfield-layer-1"></div>
+  <div id="starfield-layer-2"></div>
+  <div id="starfield-layer-3"></div>
+  <div id="vignette"></div>
 
+  <!-- SHELL -->
   <div id="shell">
+    <!-- TOP BAR -->
     <div id="topBar">
       <div id="titleBlock">
-        <div id="mainTitle">GALAXIA OS // HYPER ARCADE</div>
+        <div id="mainTitle">GALAXIA OS // A2 HYPER</div>
         <div id="mainSubtitle">SELECT A SIMULATION</div>
         <div id="sessionId">SESSION: GX-0000</div>
       </div>
@@ -379,15 +653,21 @@
       </div>
     </div>
 
+    <!-- CORE -->
     <div id="core">
+      <!-- LEFT PANEL -->
       <div id="panelLeft">
         <div id="gridHeader">
           <span id="gridTitle">SIMULATION GRID</span>
-          <span id="gridMeta"><span class="stat-label">TOTAL:</span> <span class="stat-value" id="statGames">0</span></span>
+          <span id="gridMeta">
+            <span class="stat-label">TOTAL:</span>
+            <span class="stat-value" id="statGames">0</span>
+          </span>
         </div>
         <div id="gameGrid"></div>
       </div>
 
+      <!-- RIGHT PANEL -->
       <div id="panelRight">
         <div id="viewportHeader">
           <div>
@@ -404,6 +684,7 @@
       </div>
     </div>
 
+    <!-- BOTTOM BAR -->
     <div id="bottomBar">
       <div id="xpBarOuter">
         <div id="xpFill"></div>
@@ -422,6 +703,9 @@
   </div>
 
   <script>
+    // ===========================
+    // SESSION + PLAYER
+    // ===========================
     function generateSessionId() {
       return "GX-" + Math.floor(Math.random() * 9000 + 1000);
     }
@@ -469,7 +753,418 @@
       updatePlayerUI();
     }
 
+    // ===========================
+    // NAVIGATION
+    // ===========================
     const navButtons = document.querySelectorAll(".nav-btn");
     const mainSubtitle = document.getElementById("mainSubtitle");
     const panelLeft = document.getElementById("panelLeft");
-   
+    const panelRight = document.getElementById("panelRight");
+    const viewportInner = document.getElementById("viewportInner");
+    const gameTitle = document.getElementById("currentGameTitle");
+    const gameMeta = document.getElementById("currentGameMeta");
+
+    let turboMode = true;
+
+    function switchViewport(contentHTML) {
+      if (turboMode) {
+        viewportInner.style.opacity = "0";
+        viewportInner.style.transform = "translateY(6px)";
+        setTimeout(() => {
+          viewportInner.innerHTML = contentHTML;
+          viewportInner.style.opacity = "1";
+          viewportInner.style.transform = "translateY(0)";
+        }, 200);
+      } else {
+        viewportInner.innerHTML = contentHTML;
+      }
+    }
+
+    navButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        navButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const view = btn.dataset.view;
+
+        if (view === "hub") {
+          mainSubtitle.textContent = "SELECT A SIMULATION";
+          panelLeft.style.display = "flex";
+          panelRight.style.display = "flex";
+          gameTitle.textContent = "NO SIMULATION LOADED";
+          gameMeta.textContent = "SELECT A SIMULATION FROM THE GRID";
+          switchViewport('<div id="gameContainer"></div>');
+        }
+
+        if (view === "profile") {
+          mainSubtitle.textContent = "PILOT PROFILE";
+          panelLeft.style.display = "none";
+          panelRight.style.display = "flex";
+          gameTitle.textContent = "PILOT PROFILE";
+          gameMeta.textContent = "SESSION STATS & PROGRESSION";
+          switchViewport(`
+            <div style="padding:16px; font-size:13px;">
+              <h2 style="margin-top:0; color:var(--accent); letter-spacing:0.18em; text-transform:uppercase;">Pilot Overview</h2>
+              <p><strong>Level:</strong> ${player.level}</p>
+              <p><strong>Total XP:</strong> ${player.xp}</p>
+              <p><strong>Best Score:</strong> ${player.bestScore}</p>
+              <p><strong>Sessions:</strong> ${player.sessions}</p>
+              <p><strong>Multiplier:</strong> ${player.multiplier.toFixed(1)}x</p>
+              <p style="margin-top:16px; color:var(--muted); font-size:12px;">
+                Galaxia OS tracks your performance across all simulations. Higher multipliers unlock more XP per run.
+              </p>
+            </div>
+          `);
+        }
+
+        if (view === "log") {
+          mainSubtitle.textContent = "SESSION LOG";
+          panelLeft.style.display = "none";
+          panelRight.style.display = "flex";
+          gameTitle.textContent = "SESSION LOG";
+          gameMeta.textContent = "LOCAL DEVICE ONLY";
+          switchViewport(`
+            <div style="padding:16px; font-size:13px;">
+              <h2 style="margin-top:0; color:var(--accent); letter-spacing:0.18em; text-transform:uppercase;">Session Log</h2>
+              <p style="color:var(--muted); font-size:12px;">
+                This build does not yet store a detailed log, but you can extend it by writing to localStorage
+                whenever a simulation ends. Use this panel to render that history.
+              </p>
+            </div>
+          `);
+        }
+
+        if (view === "creator") {
+          loadCreator();
+        }
+      });
+    });
+
+    // ===========================
+    // GAME GRID
+    // ===========================
+    const gameGrid = document.getElementById("gameGrid");
+
+    const builtInGames = [
+      { id: "clicker", title: "CLICKER", tagline: "FAST TAPS", xp: 10 },
+      { id: "dodge", title: "DODGE", tagline: "REACTION TEST", xp: 15 },
+      { id: "reaction", title: "REACTION", tagline: "TIMING", xp: 12 },
+      { id: "idle", title: "IDLE", tagline: "PASSIVE GAIN", xp: 5 },
+      { id: "cube", title: "3D CUBE", tagline: "VISUALIZER", xp: 8 }
+    ];
+
+    let userGames = JSON.parse(localStorage.getItem("galaxia_user_games")) || [];
+
+    function saveUserGames() {
+      localStorage.setItem("galaxia_user_games", JSON.stringify(userGames));
+    }
+
+    function rebuildGrid() {
+      gameGrid.innerHTML = "";
+
+      [...builtInGames, ...userGames].forEach(game => {
+        const card = document.createElement("div");
+        card.className = "game-card";
+        card.innerHTML = `
+          <div class="game-title">${game.title}</div>
+          <div class="game-tagline">${game.tagline}</div>
+          <div class="game-meta">
+            <span class="badge">${game.xp} XP</span>
+            <span>ID: ${game.id}</span>
+          </div>
+        `;
+        card.addEventListener("click", () => loadGame(game));
+        gameGrid.appendChild(card);
+      });
+
+      document.getElementById("statGames").textContent =
+        builtInGames.length + userGames.length;
+    }
+    rebuildGrid();
+
+    // ===========================
+    // GAME LOADING
+    // ===========================
+    function loadGame(game) {
+      gameTitle.textContent = game.title;
+      gameMeta.textContent = "LOADING SIMULATION...";
+      switchViewport('<div id="gameContainer"></div>');
+
+      setTimeout(() => {
+        runGame(game.id);
+        gameMeta.textContent = "SIMULATION ACTIVE";
+      }, 200);
+    }
+
+    // ===========================
+    // BUILT-IN GAMES
+    // ===========================
+    function runGame(id) {
+      const container = document.getElementById("gameContainer");
+      if (!container) return;
+      container.innerHTML = "";
+
+      // CLICKER
+      if (id === "clicker") {
+        let score = 0;
+        const btn = document.createElement("button");
+        btn.textContent = "CLICK ME";
+        btn.style.padding = "20px";
+        btn.style.fontSize = "20px";
+        btn.style.background = "#001d3d";
+        btn.style.color = "#00e5ff";
+        btn.style.border = "1px solid #00e5ff";
+        btn.style.borderRadius = "10px";
+        btn.style.cursor = "pointer";
+        btn.style.boxShadow = "0 0 14px rgba(0,229,255,0.8)";
+
+        btn.onclick = () => {
+          score++;
+          btn.textContent = "SCORE: " + score;
+
+          if (score % 10 === 0) addXP(10);
+
+          if (score > player.bestScore) {
+            player.bestScore = score;
+            savePlayer();
+            updatePlayerUI();
+          }
+        };
+
+        container.appendChild(btn);
+      }
+
+      // DODGE
+      if (id === "dodge") {
+        let score = 0;
+
+        const box = document.createElement("div");
+        box.style.width = "100%";
+        box.style.height = "220px";
+        box.style.position = "relative";
+        box.style.background = "#050816";
+        box.style.border = "1px solid #00e5ff";
+        box.style.borderRadius = "10px";
+        box.style.overflow = "hidden";
+
+        const playerBox = document.createElement("div");
+        playerBox.style.width = "30px";
+        playerBox.style.height = "30px";
+        playerBox.style.background = "#00e5ff";
+        playerBox.style.position = "absolute";
+        playerBox.style.left = "50%";
+        playerBox.style.bottom = "0";
+        playerBox.style.transform = "translateX(-50%)";
+
+        box.appendChild(playerBox);
+        container.appendChild(box);
+
+        function movePlayer(dir) {
+          const current = playerBox.offsetLeft;
+          const step = 20;
+          if (dir === "left") {
+            playerBox.style.left = Math.max(0, current - step) + "px";
+          }
+          if (dir === "right") {
+            playerBox.style.left = Math.min(box.clientWidth - 30, current + step) + "px";
+          }
+        }
+
+        const keyHandler = e => {
+          if (e.key === "ArrowLeft") movePlayer("left");
+          if (e.key === "ArrowRight") movePlayer("right");
+        };
+        document.addEventListener("keydown", keyHandler);
+
+        const enemy = document.createElement("div");
+        enemy.style.width = "30px";
+        enemy.style.height = "30px";
+        enemy.style.background = "#ff3366";
+        enemy.style.position = "absolute";
+        enemy.style.left = "50%";
+        enemy.style.top = "0";
+        enemy.style.transform = "translateX(-50%)";
+
+        box.appendChild(enemy);
+
+        const interval = setInterval(() => {
+          let top = enemy.offsetTop;
+          top += 10;
+          enemy.style.top = top + "px";
+
+          const enemyRect = enemy.getBoundingClientRect();
+          const playerRect = playerBox.getBoundingClientRect();
+
+          if (
+            enemyRect.bottom >= playerRect.top &&
+            enemyRect.top <= playerRect.bottom &&
+            enemyRect.right >= playerRect.left &&
+            enemyRect.left <= playerRect.right
+          ) {
+            clearInterval(interval);
+            document.removeEventListener("keydown", keyHandler);
+            container.innerHTML = "GAME OVER — SCORE: " + score;
+            addXP(score);
+
+            if (score > player.bestScore) {
+              player.bestScore = score;
+              savePlayer();
+              updatePlayerUI();
+            }
+          } else if (top >= box.clientHeight) {
+            enemy.style.top = "0px";
+            enemy.style.left = Math.random() * (box.clientWidth - 30) + "px";
+            score++;
+          }
+        }, 120);
+      }
+
+      // REACTION
+      if (id === "reaction") {
+        container.innerHTML = "WAIT FOR GREEN...";
+
+        setTimeout(() => {
+          container.innerHTML = "";
+
+          const btn = document.createElement("button");
+          btn.textContent = "CLICK FAST!";
+          btn.style.padding = "20px";
+          btn.style.fontSize = "20px";
+          btn.style.background = "#001d3d";
+          btn.style.color = "#00e5ff";
+          btn.style.border = "1px solid #00e5ff";
+          btn.style.borderRadius = "10px";
+          btn.style.cursor = "pointer";
+          btn.style.boxShadow = "0 0 14px rgba(0,229,255,0.8)";
+
+          const start = Date.now();
+
+          btn.onclick = () => {
+            const time = Date.now() - start;
+            container.innerHTML = "REACTION TIME: " + time + "ms";
+
+            addXP(Math.max(1, 1000 - time));
+
+            if (1000 - time > player.bestScore) {
+              player.bestScore = 1000 - time;
+              savePlayer();
+              updatePlayerUI();
+            }
+          };
+
+          container.appendChild(btn);
+        }, Math.random() * 3000 + 1000);
+      }
+
+      // IDLE
+      if (id === "idle") {
+        let score = 0;
+
+        container.innerHTML = "IDLE MODE ACTIVE<br><br>";
+
+        const scoreDisplay = document.createElement("div");
+        scoreDisplay.textContent = "SCORE: 0";
+        container.appendChild(scoreDisplay);
+
+        const interval = setInterval(() => {
+          score++;
+          scoreDisplay.textContent = "SCORE: " + score;
+
+          addXP(1);
+
+          if (score > player.bestScore) {
+            player.bestScore = score;
+            savePlayer();
+            updatePlayerUI();
+          }
+
+          if (score >= 100) clearInterval(interval);
+        }, 1000);
+      }
+
+      // 3D CUBE
+      if (id === "cube") {
+        container.innerHTML = `
+          <style>
+            .cube {
+              width: 100px;
+              height: 100px;
+              background: linear-gradient(45deg, #00e5ff, #0066ff);
+              animation: spin 2s infinite linear;
+              margin: auto;
+              margin-top: 40px;
+              box-shadow: 0 0 20px rgba(0,229,255,0.9);
+            }
+            @keyframes spin {
+              0% { transform: rotateY(0deg) rotateX(0deg); }
+              100% { transform: rotateY(360deg) rotateX(360deg); }
+            }
+          </style>
+          <div class="cube"></div>
+        `;
+
+        addXP(8);
+      }
+
+      // USER GAMES
+      const custom = userGames.find(g => g.id === id);
+      if (custom) {
+        try {
+          const fn = new Function(`
+            const container = document.getElementById("gameContainer");
+            if (!container) return;
+            container.innerHTML = "";
+            ${custom.code}
+          `);
+          fn();
+        } catch (err) {
+          container.innerHTML = "ERROR IN GAME CODE:<br>" + err;
+        }
+      }
+    }
+
+    // ===========================
+    // CREATOR
+    // ===========================
+    document.getElementById("creatorBtn").addEventListener("click", () => {
+      loadCreator();
+      navButtons.forEach(b => b.classList.remove("active"));
+      document.querySelector('.nav-btn[data-view="creator"]').classList.add("active");
+    });
+
+    function loadCreator() {
+      gameTitle.textContent = "GAME CREATOR";
+      gameMeta.textContent = "GALAXIA STUDIO PRO";
+      switchViewport(`
+        <iframe id="creatorFrame" src="creator.html"></iframe>
+      `);
+    }
+
+    // PUBLISH SYSTEM
+    window.addEventListener("message", event => {
+      if (!event.data || typeof event.data !== "object") return;
+
+      if (event.data.type === "publishGame") {
+        const game = event.data.payload;
+
+        userGames.push(game);
+        saveUserGames();
+        rebuildGrid();
+
+        addXP(25);
+
+        gameTitle.textContent = "GAME PUBLISHED";
+        gameMeta.textContent = "ADDED TO ARCADE GRID";
+
+        viewportInner.innerHTML = `
+          <div style="padding:20px; text-align:center;">
+            <h2 style="color:var(--accent); letter-spacing:0.18em; text-transform:uppercase;">GAME PUBLISHED!</h2>
+            <p>Your game <strong>${game.title}</strong> is now available in the grid.</p>
+            <p>ID: <strong>${game.id}</strong></p>
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
