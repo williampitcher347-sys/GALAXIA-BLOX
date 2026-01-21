@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GALAXIA BLOX // NEON ARCADE CORE</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #02030a;
+      --bg-alt: #05081a;
+      --accent: #00e5ff;
+      --accent-soft: rgba(0, 229, 255, 0.2);
+      --accent-strong: rgba(0, 229, 255, 0.8);
+      --danger: #ff3366;
+      --good: #00ff99;
+      --text-main: #e6f7ff;
+      --text-soft: #7f9bb5;
+      --card-bg: rgba(5, 10, 30, 0.95);
+      --border-glow: 0 0 20px rgba(0, 229, 255, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #04152b 0, #02030a 40%, #000000 100%);
+      color: var(--text-main);
+      overflow: hidden;
+    }
+
+    /* Background effects */
+    .starfield {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.15) 0, transparent 40%),
+        radial-gradient(circle at 80% 10%, rgba(0, 255, 153, 0.12) 0, transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(0, 153, 255, 0.1) 0, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(
+        rgba(255, 255, 255, 0.03) 1px,
+        transparent 1px
+      );
+      background-size: 100% 2px;
+      mix-blend-mode: soft-light;
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='noStitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.18'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Layout */
+    .app-shell {
+      position: relative;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      grid-template-rows: auto minmax(0, 1fr);
+      height: 100vh;
+      backdrop-filter: blur(16px);
+    }
+
+    header {
+      grid-column: 1 / -1;
+      padding: 14px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.25);
+      background: linear-gradient(
+        90deg,
+        rgba(0, 229, 255, 0.18),
+        rgba(0, 0, 0, 0.7),
+        rgba(0, 229, 255, 0.12)
+      );
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.25);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-orb {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 180deg,
+        #00e5ff,
+        #00ff99,
+        #0066ff,
+        #00e5ff
+      );
+      box-shadow:
+        0 0 20px rgba(0, 229, 255, 0.8),
+        0 0 40px rgba(0, 255, 153, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brand-orb::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 20%, #ffffff, transparent 55%);
+      opacity: 0.9;
+    }
+
+    .brand-text-main {
+      font-size: 18px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-shadow: 0 0 12px rgba(0, 229, 255, 0.8);
+    }
+
+    .brand-text-sub {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-top: 2px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-soft);
+    }
+
+    .status-pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 229, 255, 0.5);
+      background: radial-gradient(circle at 0 0, rgba(0, 229, 255, 0.4), transparent 60%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.4);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--good);
+      box-shadow: 0 0 12px rgba(0, 255, 153, 0.9);
+      animation: pulse 1.4s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.4; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Sidebar */
+    .sidebar {
+      border-right: 1px solid rgba(0, 229, 255, 0.25);
+      background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.85),
+        rgba(2, 3, 10, 0.98)
+      );
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .profile-card {
+      padding: 12px 12px 10px;
+      border-radius: 14px;
+      background: radial-gradient(circle at top, rgba(0, 229, 255, 0.18), rgba(0, 0, 0, 0.9));
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      box-shadow: var(--border-glow);
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00e5ff, #0066ff);
+      box-shadow:
+        0 0 18px rgba(0, 229, 255, 0.8),
+        0 0 30px rgba(0, 102, 255, 0.7);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .avatar::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      opacity: 0.7;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .profile-rank {
+      font-size: 11px;
+      color: var(--text-soft);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .xp-bar {
+      margin-top: 6px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(0, 229, 255, 0.12);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .xp-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00e5ff, #00ff99);
+      box-shadow: 0 0 16px rgba(0, 229, 255, 0.8);
+      transition: width 0.4s ease-out;
+    }
+
+    .xp-label {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .sidebar-section-title {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 6px;
+    }
+
+    .nav-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-btn {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      background: rgba(0, 0, 0, 0.7);
+      color: var(--text-main);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: 0.18s;
+    }
+
+    .nav-btn span {
+      opacity: 0.8;
+    }
+
+    .nav-btn small {
+      color: var(--accent);
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    .nav-btn:hover {
+      background: rgba(0, 229, 255, 0.12);
+      box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .nav-btn.active {
+      background: linear-gradient(90deg, rgba(0, 229, 255, 0.3), rgba(0, 0, 0, 0.9));
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+      border-color: rgba(0, 229, 255, 0.8);
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+      font-size: 11px;
+    }
+
+    .stat-card {
+      padding: 6px 8px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      color: var(--text-soft);
+    }
+
+    .stat-label {
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .stat-value {
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    .footer-note {
+      margin-top: auto;
+      font-size: 10px;
+      color: var(--text-soft);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    /* Main area */
+    .main {
+      padding: 16px 18px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .main-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .main-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .main-title {
+      font-size: 16px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .main-subtitle {
+      font-size: 11px;
+      color: var(--text-soft);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .chip-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      background: rgba(0, 0, 0, 0.7);
+    }
+
+    .chip.highlight {
+      border-color: rgba(0, 255, 153, 0.7);
+      color: var(--good);
+      box-shadow: 0 0 14px rgba(0, 255, 153, 0.5);
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 6px;
+    }
+
+    .view-btn {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      background: rgba(0, 0, 0, 0.7);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      cursor: pointer;
+      transition: 0.16s;
+    }
+
+    .view-btn.active {
+      background: rgba(0, 229, 255, 0.16);
+      color: var(--accent);
+      box-shadow: 0 0 14px rgba(0, 229, 255, 0.5);
+    }
+
+    .view-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .content {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.1fr);
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .panel {
+      border-radius: 16px;
+      background: radial-gradient(circle at top left, rgba(0, 229, 255, 0.18), rgba(0, 0, 0, 0.96));
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      box-shadow: var(--border-glow);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+
+    .panel-header span {
+      color: var(--accent);
+    }
+
+    .panel-body {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Game grid */
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      height: 100%;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .game-card {
+      position: relative;
+      border-radius: 14px;
+      background: var(--card-bg);
+      border: 1px solid rgba(0, 229, 255, 0.25);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      transition: 0.18s;
+      overflow: hidden;
+    }
+
+    .game-card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: conic-gradient(
+        from 180deg,
+        rgba(0, 229, 255, 0.15),
+        transparent,
+        rgba(0, 255, 153, 0.15),
+        transparent
+      );
+      opacity: 0;
+      transition: opacity 0.2s;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .game-card:hover::before {
+      opacity: 1;
+    }
+
+    .game-card:hover {
+      transform: translateY(-3px);
+      box-shadow:
+        0 0 18px rgba(0, 229, 255, 0.5),
+        0 0 30px rgba(0, 0, 0, 0.9);
+      border-color: rgba(0, 229, 255, 0.7);
+    }
+
+    .game-title {
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .game-tagline {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .game-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 10px;
+      color: var(--text-soft);
+      margin-top: 4px;
+    }
+
+    .badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .badge.danger {
+      border-color: rgba(255, 51, 102, 0.7);
+      color: var(--danger);
+    }
+
+    .badge.good {
+      border-color: rgba(0, 255, 153, 0.7);
+      color: var(--good);
+    }
+
+    /* Game viewport */
+    .game-viewport {
+      position: relative;
+      height: 100%;
+      border-radius: 12px;
+      background: radial-gradient(circle at top, #050816, #02030a 60%, #000000 100%);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      overflow: hidden;
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.4);
+    }
+
+    .game-overlay-top {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.7), transparent 30%),
+        linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent 40%);
+      opacity: 0.7;
+    }
+
+    .game-inner {
+      position: absolute;
+      inset: 0;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 2;
+    }
+
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+
+    .game-header span {
+      color: var(--accent);
+    }
+
+    .game-status {
+      font-size: 10px;
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot-small {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(0, 229, 255, 0.8);
+    }
+
+    .game-canvas {
+      flex: 1;
+      border-radius: 10px;
+      background: radial-gradient(circle at top, #050816, #000000 70%);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-soft);
+      font-size: 13px;
+    }
+
+    .game-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .game-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .ctrl-btn {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      background: rgba(0, 0, 0, 0.7);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      cursor: pointer;
+      transition: 0.16s;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(0, 229, 255, 0.18);
+      box-shadow: 0 0 14px rgba(0, 229, 255, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .game-log {
+      font-size: 10px;
+      color: var(--text-soft);
+      max-width: 60%;
+      text-align: right;
+    }
+
+    /* Activity / log panel */
+    .log-list {
+      font-size: 11px;
+      color: var(--text-soft);
+      height: 100%;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px dashed rgba(0, 229, 255, 0.18);
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .log-entry span {
+      font-size: 10px;
+    }
+
+    .log-tag {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 9px;
+    }
+
+    .log-time {
+      color: var(--text-soft);
+      font-size: 9px;
+    }
+
+    /* Simple mini-games */
+    .clicker-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .clicker-orb {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 20%, #ffffff, #00e5ff 40%, #001020 80%);
+      box-shadow:
+        0 0 25px rgba(0, 229, 255, 0.9),
+        0 0 50px rgba(0, 102, 255, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #001018;
+      font-weight: bold;
+      font-size: 18px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.08s, box-shadow 0.08s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .clicker-orb:active {
+      transform: scale(0.95);
+      box-shadow:
+        0 0 18px rgba(0, 229, 255, 0.7),
+        0 0 30px rgba(0, 102, 255, 0.6);
+    }
+
+    .clicker-label {
+      font-size: 11px;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .clicker-stats {
+      font-size: 11px;
+      color: var(--accent);
+    }
+
+    .dodge-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at top, #050816, #000000 70%);
+      overflow: hidden;
+    }
+
+    .dodge-player {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      width: 26px;
+      height: 26px;
+      margin-left: -13px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #00e5ff, #00ff99);
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.8);
+    }
+
+    .dodge-obstacle {
+      position: absolute;
+      top: -16px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ff3366;
+      box-shadow: 0 0 16px rgba(255, 51, 102, 0.9);
+    }
+
+    .reaction-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      height: 100%;
+      justify-content: center;
+    }
+
+    .reaction-box {
+      width: 160px;
+      height: 80px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--text-soft);
+      cursor: pointer;
+      transition: 0.16s;
+      text-align: center;
+      padding: 6px;
+    }
+
+    .reaction-box.ready {
+      background: rgba(0, 229, 255, 0.16);
+      color: var(--accent);
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.6);
+    }
+
+    .reaction-box.too-soon {
+      background: rgba(255, 51, 102, 0.16);
+      color: var(--danger);
+      box-shadow: 0 0 18px rgba(255, 51, 102, 0.6);
+    }
+
+    .reaction-time {
+      font-size: 11px;
+      color: var(--accent);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto minmax(0, 1fr);
+      }
+      .sidebar {
+        grid-row: 2;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 10px;
+      }
+      .profile-card {
+        min-width: 200px;
+      }
+      .content {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="starfield"></div>
+  <div class="scanlines"></div>
+  <div class="noise"></div>
+
+  <div class="app-shell">
+    <header>
+      <div class="brand">
+        <div class="brand-orb"></div>
+        <div>
+          <div class="brand-text-main">GALAXIA BLOX</div>
+          <div class="brand-text-sub">NEON ARCADE CORE // LOCAL UNIVERSE</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="status-pill">
+          <div class="status-dot"></div>
+          <span>ARCADE NODE ONLINE</span>
+        </div>
+        <div>SESSION: <span id="sessionId">GX-0001</span></div>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="avatar"></div>
+          <div>
+            <div class="profile-name" id="playerName">WILLIAM // CORE</div>
+            <div class="profile-rank" id="playerRank">RANK: CADET</div>
+          </div>
+        </div>
+        <div class="xp-bar">
+          <div class="xp-fill" id="xpFill"></div>
+        </div>
+        <div class="xp-label">
+          <span id="xpText">XP: 0 / 100</span>
+          <span id="levelText">LVL 1</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-title">NAVIGATION</div>
+        <div class="nav-buttons">
+          <button class="nav-btn active" data-view="hub">
+            <span>ARCADE HUB</span>
+            <small>GRID</small>
+          </button>
+          <button class="nav-btn" data-view="profile">
+            <span>PILOT PROFILE</span>
+            <small>STATS</small>
+          </button>
+          <button class="nav-btn" data-view="log">
+            <span>SESSION LOG</span>
+            <small>FEED</small>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <div class="sidebar-section-title">CORE STATS</div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">TOTAL GAMES</div>
+            <div class="stat-value" id="statGames">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">BEST SCORE</div>
+            <div class="stat-value" id="statBest">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">SESSIONS</div>
+            <div class="stat-value" id="statSessions">1</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">XP MULTIPLIER</div>
+            <div class="stat-value" id="statMultiplier">1.0x</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        GALAXIA BLOX // LOCAL SIMULATION NODE<br />
+        PROGRESSION STORED IN THIS BROWSER ONLY
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="main-top">
+        <div class="main-title-block">
+          <div class="main-title">ARCADE GRID // LIVE</div>
+          <div class="main-subtitle" id="mainSubtitle">
+            SELECT A SIMULATION TO DEPLOY
+          </div>
+          <div class="chip-row">
+            <div class="chip highlight">XP LINKED</div>
+            <div class="chip">OFFLINE SINGLE-PLAYER</div>
+            <div class="chip">LOCAL STORAGE PROGRESSION</div>
+          </div>
+        </div>
+        <div class="view-toggle">
+          <button class="view-btn active" data-viewmode="games">GAMES</button>
+          <button class="view-btn" data-viewmode="profile">PROFILE</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <section class="panel" id="panelLeft">
+          <div class="panel-header">
+            <div>ARCADE GRID // <span>SIMULATIONS</span></div>
+            <div>FILTER: <span>CURATED</span></div>
+          </div>
+          <div class="panel-body">
+            <div class="game-grid" id="gameGrid">
+              <!-- Game cards injected by JS -->
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="panelRight">
+          <div class="panel-header">
+            <div>SIMULATION VIEWPORT // <span id="currentGameTitle">IDLE</span></div>
+            <div id="currentGameMeta">NO SIMULATION DEPLOYED</div>
+          </div>
+          <div class="panel-body">
+            <div class="game-viewport">
+              <div class="game-overlay-top"></div>
+              <div class="game-inner">
+                <div class="game-header">
+                  <div>CHANNEL: <span id="gameChannel">NONE</span></div>
+                  <div class="game-status">
+                    <div class="status-dot-small"></div>
+                    <span id="gameStatusText">STANDBY</span>
+                  </div>
+                </div>
+                <div class="game-canvas" id="gameCanvas">
+                  SELECT A GAME FROM THE GRID TO DEPLOY IT HERE.
+                </div>
+                <div class="game-footer">
+                  <div class="game-controls">
+                    <button class="ctrl-btn" id="btnStart">START</button>
+                    <button class="ctrl-btn" id="btnReset">RESET</button>
+                  </div>
+                  <div class="game-log" id="gameLog">NO ACTIVE SESSION.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // --- Core state ---
+    const state = {
+      xp: 0,
+      level: 1,
+      xpToNext: 100,
+      totalGames: 0,
+      bestScore: 0,
+      sessions: 1,
+      multiplier: 1.0,
+      currentGameId: null,
+      currentGameInstance: null,
+      logs: [],
+    };
+
+    const games = [
+      {
+        id: "clicker_core",
+        name: "CORE CLICKER",
+        tagline: "Charge the reactor by tapping the singularity.",
+        difficulty: "EASY",
+        type: "CLICKER",
+        channel: "GX-01",
+        xpPerRun: 10,
+      },
+      {
+        id: "dodge_field",
+        name: "ASTEROID FIELD",
+        tagline: "Slide through the debris. Survive as long as possible.",
+        difficulty: "MEDIUM",
+        type: "DODGE",
+        channel: "GX-02",
+        xpPerRun: 20,
+      },
+      {
+        id: "reaction_pulse",
+        name: "PULSE REACTION",
+        tagline: "Wait for the pulse. Tap at light speed.",
+        difficulty: "MEDIUM",
+        type: "REACTION",
+        channel: "GX-03",
+        xpPerRun: 15,
+      },
+      {
+        id: "idle_xp",
+        name: "IDLE LINK",
+        tagline: "XP trickles in while you watch the stars.",
+        difficulty: "EASY",
+        type: "IDLE",
+        channel: "GX-04",
+        xpPerRun: 5,
+      },
+    ];
+
+    // --- DOM refs ---
+    const gameGrid = document.getElementById("gameGrid");
+    const xpFill = document.getElementById("xpFill");
+    const xpText = document.getElementById("xpText");
+    const levelText = document.getElementById("levelText");
+    const statGames = document.getElementById("statGames");
+    const statBest = document.getElementById("statBest");
+    const statSessions = document.getElementById("statSessions");
+    const statMultiplier = document.getElementById("statMultiplier");
+    const currentGameTitle = document.getElementById("currentGameTitle");
+    const currentGameMeta = document.getElementById("currentGameMeta");
+    const gameChannel = document.getElementById("gameChannel");
+    const gameStatusText = document.getElementById("gameStatusText");
+    const gameCanvas = document.getElementById("gameCanvas");
+    const gameLog = document.getElementById("gameLog");
+    const btnStart = document.getElementById("btnStart");
+    const btnReset = document.getElementById("btnReset");
+    const mainSubtitle = document.getElementById("mainSubtitle");
+
+    // --- Local storage ---
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem("galaxia_blox_state"));
+        if (saved) {
+          Object.assign(state, saved);
+        }
+      } catch (e) {
+        console.warn("No saved state or parse error.");
+      }
+    }
+
+    function saveState() {
+      const toSave = {
+        xp: state.xp,
+        level: state.level,
+        xpToNext: state.xpToNext,
+        totalGames: state.totalGames,
+        bestScore: state.bestScore,
+        sessions: state.sessions,
+        multiplier: state.multiplier,
+      };
+      localStorage.setItem("galaxia_blox_state", JSON.stringify(toSave));
+    }
+
+    // --- UI update ---
+    function updateProfileUI() {
+      const pct = Math.min(100, (state.xp / state.xpToNext) * 100);
+      xpFill.style.width = pct + "%";
+      xpText.textContent = `XP: ${state.xp} / ${state.xpToNext}`;
+      levelText.textContent = `LVL ${state.level}`;
+      statGames.textContent = state.totalGames;
+      statBest.textContent = state.bestScore;
+      statSessions.textContent = state.sessions;
+      statMultiplier.textContent = state.multiplier.toFixed(1) + "x";
+
+      const rankEl = document.getElementById("playerRank");
+      if (state.level >= 10) {
+        rankEl.textContent = "RANK: OVERSEER";
+      } else if (state.level >= 5) {
+        rankEl.textContent = "RANK: PILOT";
+      } else if (state.level >= 3) {
+        rankEl.textContent = "RANK: OPERATOR";
+      } else {
+        rankEl.textContent = "RANK: CADET";
+      }
+    }
+
+    function addXP(amount, reason = "") {
+      const gained = Math.round(amount * state.multiplier);
+      state.xp += gained;
+      if (state.xp >= state.xpToNext) {
+        state.xp -= state.xpToNext;
+        state.level++;
+        state.xpToNext = Math.round(state.xpToNext * 1.3);
+        logEvent("LEVEL UP", `Reached level ${state.level}`);
+      }
+      if (reason) {
+        logEvent("XP", `+${gained} XP // ${reason}`);
+      }
+      updateProfileUI();
+      saveState();
+    }
+
+    function logEvent(tag, message) {
+      const now = new Date();
+      const time = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      state.logs.unshift({ tag, message, time });
+      if (state.logs.length > 50) state.logs.pop();
+      updateLogPanel();
+      gameLog.textContent = `${tag}: ${message}`;
+    }
+
+    function updateLogPanel() {
+      const panel = document.getElementById("panelLeft");
+      const logListId = "logList";
+      let logList = document.getElementById(logListId);
+      if (!logList) {
+        logList = document.createElement("div");
+        logList.id = logListId;
+        logList.className = "log-list";
+      }
+      logList.innerHTML = "";
+      state.logs.forEach((entry) => {
+        const row = document.createElement("div");
+        row.className = "log-entry";
+        row.innerHTML = `
+          <div>
+            <div class="log-tag">${entry.tag}</div>
+            <span>${entry.message}</span>
+          </div>
+          <div class="log-time">${entry.time}</div>
+        `;
+        logList.appendChild(row);
+      });
+      // Only attach if current left panel is log view
+      if (panel.dataset.mode === "log") {
+        const body = panel.querySelector(".panel-body");
+        body.innerHTML = "";
+        body.appendChild(logList);
+      }
+    }
+
+    // --- Game grid ---
+    function renderGameGrid() {
+      gameGrid.innerHTML = "";
+      games.forEach((game) => {
+        const card = document.createElement("div");
+        card.className = "game-card";
+        card.dataset.gameId = game.id;
+        card.innerHTML = `
+          <div class="game-title">${game.name}</div>
+          <div class="game-tagline">${game.tagline}</div>
+          <div class="game-meta">
+            <span>${game.type} // ${game.channel}</span>
+            <span class="badge ${game.difficulty === "HARD" ? "danger" : game.difficulty === "EASY" ? "good" : ""}">
+              ${game.difficulty}
+            </span>
+          </div>
+        `;
+        card.addEventListener("click", () => selectGame(game.id));
+        gameGrid.appendChild(card);
+      });
+    }
+
+    // --- Game selection ---
+    function selectGame(gameId) {
+      const game = games.find((g) => g.id === gameId);
+      if (!game) return;
+      state.currentGameId = gameId;
+      currentGameTitle.textContent = game.name;
+      currentGameMeta.textContent = `${game.type} // CHANNEL ${game.channel} // XP ${game.xpPerRun}`;
+      gameChannel.textContent = game.channel;
+      gameStatusText.textContent = "READY";
+      mainSubtitle.textContent = `DEPLOYED: ${game.name}`;
+      gameCanvas.innerHTML = "";
+      if (state.currentGameInstance && state.currentGameInstance.destroy) {
+        state.currentGameInstance.destroy();
+      }
+      state.currentGameInstance = createGameInstance(game);
+      logEvent("GAME SELECT", game.name);
+    }
+
+    // --- Game instances ---
+    function createGameInstance(game) {
+      switch (game.type) {
+        case "CLICKER":
+          return createClickerGame(game);
+        case "DODGE":
+          return createDodgeGame(game);
+        case "REACTION":
+          return createReactionGame(game);
+        case "IDLE":
+          return createIdleGame(game);
+        default:
+          gameCanvas.textContent = "UNKNOWN GAME TYPE.";
+          return null;
+      }
+    }
+
+    // CLICKER GAME
+    function createClickerGame(game) {
+      const container = document.createElement("div");
+      container.className = "clicker-container";
+
+      const orb = document.createElement("div");
+      orb.className = "clicker-orb";
+      let count = 0;
+      orb.textContent = "0";
+
+      const label = document.createElement("div");
+      label.className = "clicker-label";
+      label.textContent = "TAP TO CHARGE CORE";
+
+      const stats = document.createElement("div");
+      stats.className = "clicker-stats";
+      stats.textContent = "CHARGES: 0";
+
+      container.appendChild(orb);
+      container.appendChild(label);
+      container.appendChild(stats);
+      gameCanvas.appendChild(container);
+
+      function handleClick() {
+        count++;
+        orb.textContent = count;
+        stats.textContent = `CHARGES: ${count}`;
+        if (count % 10 === 0) {
+          addXP(game.xpPerRun, `${game.name} // ${count} charges`);
+          state.totalGames++;
+          if (count > state.bestScore) {
+            state.bestScore = count;
+          }
+          updateProfileUI();
+          saveState();
+        }
+      }
+
+      orb.addEventListener("click", handleClick);
+
+      return {
+        start() {
+          gameStatusText.textContent = "LIVE // CLICKER";
+          logEvent("GAME START", game.name);
+        },
+        reset() {
+          count = 0;
+          orb.textContent = "0";
+          stats.textContent = "CHARGES: 0";
+          gameStatusText.textContent = "READY";
+          logEvent("GAME RESET", game.name);
+        },
+        destroy() {
+          orb.removeEventListener("click", handleClick);
+        },
+      };
+    }
+
+    // DODGE GAME
+    function createDodgeGame(game) {
+      const container = document.createElement("div");
+      container.className = "dodge-container";
+      const player = document.createElement("div");
+      player.className = "dodge-player";
+      container.appendChild(player);
+      gameCanvas.appendChild(container);
+
+      let running = false;
+      let score = 0;
+      let obstacles = [];
+      let lastSpawn = 0;
+      let lastFrame = 0;
+      let animId = null;
+      let playerX = 0.5;
+
+      function spawnObstacle() {
+        const obs = document.createElement("div");
+        obs.className = "dodge-obstacle";
+        const x = Math.random();
+        obs.style.left = x * 100 + "%";
+        container.appendChild(obs);
+        obstacles.push({ el: obs, x, y: 0 });
+      }
+
+      function updatePlayer() {
+        const width = container.clientWidth;
+        const px = playerX * width;
+        player.style.left = px - player.offsetWidth / 2 + "px";
+      }
+
+      function loop(timestamp) {
+        if (!running) return;
+        if (!lastFrame) lastFrame = timestamp;
+        const dt = (timestamp - lastFrame) / 1000;
+        lastFrame = timestamp;
+        lastSpawn += dt;
+        if (lastSpawn > 0.8) {
+          spawnObstacle();
+          lastSpawn = 0;
+        }
+        const height = container.clientHeight;
+        obstacles.forEach((o) => {
+          o.y += dt * 0.4;
+          o.el.style.top = o.y * height + "px";
+        });
+        obstacles = obstacles.filter((o) => {
+          if (o.y > 1.1) {
+            container.removeChild(o.el);
+            score++;
+            return false;
+          }
+          const px = player.offsetLeft + player.offsetWidth / 2;
+          const py = player.offsetTop + player.offsetHeight / 2;
+          const ox = o.el.offsetLeft + o.el.offsetWidth / 2;
+          const oy = o.el.offsetTop + o.el.offsetHeight / 2;
+          const dx = px - ox;
+          const dy = py - oy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 20) {
+            endGame();
+            return false;
+          }
+          return true;
+        });
+        gameLog.textContent = `SCORE: ${score}`;
+        animId = requestAnimationFrame(loop);
+      }
+
+      function endGame() {
+        running = false;
+        if (animId) cancelAnimationFrame(animId);
+        obstacles.forEach((o) => container.removeChild(o.el));
+        obstacles = [];
+        addXP(game.xpPerRun + Math.floor(score / 3), `${game.name} // score ${score}`);
+        state.totalGames++;
+        if (score > state.bestScore) state.bestScore = score;
+        updateProfileUI();
+        saveState();
+        gameStatusText.textContent = "IMPACT // SESSION COMPLETE";
+        logEvent("GAME END", `${game.name} // score ${score}`);
+      }
+
+      function handleMove(e) {
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        playerX = x / rect.width;
+        playerX = Math.max(0.05, Math.min(0.95, playerX));
+        updatePlayer();
+      }
+
+      container.addEventListener("mousemove", handleMove);
+      updatePlayer();
+
+      return {
+        start() {
+          if (running) return;
+          running = true;
+          score = 0;
+          lastSpawn = 0;
+          lastFrame = 0;
+          gameStatusText.textContent = "LIVE // DODGE";
+          logEvent("GAME START", game.name);
+          animId = requestAnimationFrame(loop);
+        },
+        reset() {
+          running = false;
+          if (animId) cancelAnimationFrame(animId);
+          obstacles.forEach((o) => container.removeChild(o.el));
+          obstacles = [];
+          score = 0;
+          gameStatusText.textContent = "READY";
+          gameLog.textContent = "SESSION CLEARED.";
+          logEvent("GAME RESET", game.name);
+        },
+        destroy() {
+          running = false;
+          if (animId) cancelAnimationFrame(animId);
+          container.removeEventListener("mousemove", handleMove);
+        },
+      };
+    }
+
+    // REACTION GAME
+    function createReactionGame(game) {
+      const container = document.createElement("div");
+      container.className = "reaction-container";
+
+      const box = document.createElement("div");
+      box.className = "reaction-box";
+      box.textContent = "CLICK TO ARM THE PULSE.";
+
+      const timeLabel = document.createElement("div");
+      timeLabel.className = "reaction-time";
+      timeLabel.textContent = "BEST: -- ms";
+
+      container.appendChild(box);
+      container.appendChild(timeLabel);
+      gameCanvas.appendChild(container);
+
+      let armed = false;
+      let ready = false;
+      let timeoutId = null;
+      let startTime = 0;
+      let best = null;
+
+      function resetBox() {
+        armed = false;
+        ready = false;
+        box.classList.remove("ready", "too-soon");
+        box.textContent = "CLICK TO ARM THE PULSE.";
+      }
+
+      function arm() {
+        resetBox();
+        armed = true;
+        box.textContent = "WAIT FOR THE PULSE...";
+        const delay = 1000 + Math.random() * 3000;
+        timeoutId = setTimeout(() => {
+          ready = true;
+          startTime = performance.now();
+          box.classList.add("ready");
+          box.textContent = "PULSE LIVE! CLICK NOW!";
+        }, delay);
+      }
+
+      function handleClick() {
+        if (!armed) {
+          arm();
+          return;
+        }
+        if (!ready) {
+          if (timeoutId) clearTimeout(timeoutId);
+          box.classList.add("too-soon");
+          box.textContent = "TOO SOON. PULSE ABORTED.";
+          logEvent("REACTION", "Too soon.");
+          setTimeout(resetBox, 800);
+          return;
+        }
+        const end = performance.now();
+        const diff = Math.round(end - startTime);
+        if (best === null || diff < best) {
+          best = diff;
+          timeLabel.textContent = `BEST: ${best} ms`;
+          addXP(game.xpPerRun, `${game.name} // ${diff} ms`);
+          state.totalGames++;
+          if (diff > state.bestScore) state.bestScore = diff;
+          updateProfileUI();
+          saveState();
+          logEvent("REACTION", `New best: ${diff} ms`);
+        } else {
+          logEvent("REACTION", `Time: ${diff} ms`);
+        }
+        resetBox();
+      }
+
+      box.addEventListener("click", handleClick);
+
+      return {
+        start() {
+          resetBox();
+          gameStatusText.textContent = "LIVE // REACTION";
+          logEvent("GAME START", game.name);
+        },
+        reset() {
+          if (timeoutId) clearTimeout(timeoutId);
+          resetBox();
+          gameStatusText.textContent = "READY";
+          gameLog.textContent = "SESSION CLEARED.";
+          logEvent("GAME RESET", game.name);
+        },
+        destroy() {
+          if (timeoutId) clearTimeout(timeoutId);
+          box.removeEventListener("click", handleClick);
+        },
+      };
+    }
+
+    // IDLE GAME
+    function createIdleGame(game) {
+      const container = document.createElement("div");
+      container.className = "clicker-container";
+
+      const label = document.createElement("div");
+      label.className = "clicker-label";
+      label.textContent = "IDLE LINK ACTIVE";
+
+      const stats = document.createElement("div");
+      stats.className = "clicker-stats";
+      stats.textContent = "XP trickling in...";
+
+      container.appendChild(label);
+      container.appendChild(stats);
+      gameCanvas.appendChild(container);
+
+      let intervalId = null;
+      let ticks = 0;
+
+      function tick() {
+        ticks++;
+        addXP(1, `${game.name} // idle tick`);
+        stats.textContent = `XP trickling in... (${ticks})`;
+      }
+
+      return {
+        start() {
+          if (intervalId) return;
+          intervalId = setInterval(tick, 3000);
+          gameStatusText.textContent = "LIVE // IDLE LINK";
+          logEvent("GAME START", game.name);
+        },
+        reset() {
+          if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+          }
+          ticks = 0;
+          stats.textContent = "XP trickling in...";
+          gameStatusText.textContent = "READY";
+          gameLog.textContent = "IDLE LINK DISCONNECTED.";
+          logEvent("GAME RESET", game.name);
+        },
+        destroy() {
+          if (intervalId) clearInterval(intervalId);
+        },
+      };
+    }
+
+    // --- Controls ---
+    btnStart.addEventListener("click", () => {
+      if (!state.currentGameInstance) {
+        gameLog.textContent = "NO GAME SELECTED.";
+        return;
+      }
+      state.currentGameInstance.start && state.currentGameInstance.start();
+    });
+
+    btnReset.addEventListener("click", () => {
+      if (!state.currentGameInstance) {
+        gameLog.textContent = "NO GAME SELECTED.";
+        return;
+      }
+      state.currentGameInstance.reset && state.currentGameInstance.reset();
+    });
+
+    // --- Sidebar nav views (for future expansion) ---
+    document.querySelectorAll(".nav-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".nav-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const view = btn.dataset.view;
+        const leftPanel = document.getElementById("panelLeft");
+        leftPanel.dataset.mode = view;
+        const body = leftPanel.querySelector(".panel-body");
+        const header = leftPanel.querySelector(".panel-header div:first-child");
+        if (view === "hub") {
+          header.innerHTML = 'ARCADE GRID // <span>SIMULATIONS</span>';
+          body.innerHTML = "";
+          body.appendChild(gameGrid);
+        } else if (view === "profile") {
+          header.innerHTML = 'PILOT PROFILE // <span>STATS</span>';
+          body.innerHTML = `
+            <div style="font-size:12px;color:var(--text-soft);line-height:1.6;">
+              <div>NAME: <span style="color:var(--accent);">WILLIAM</span></div>
+              <div>LEVEL: <span style="color:var(--accent);" id="profileLevel">${state.level}</span></div>
+              <div>XP: <span style="color:var(--accent);" id="profileXP">${state.xp}/${state.xpToNext}</span></div>
+              <div>GAMES PLAYED: <span style="color:var(--accent);" id="profileGames">${state.totalGames}</span></div>
+              <div>BEST SCORE: <span style="color:var(--accent);" id="profileBest">${state.bestScore}</span></div>
+              <div>SESSIONS: <span style="color:var(--accent);" id="profileSessions">${state.sessions}</span></div>
+              <div>XP MULTIPLIER: <span style="color:var(--accent);" id="profileMult">${state.multiplier.toFixed(1)}x</span></div>
+              <div style="margin-top:8px;font-size:11px;color:var(--text-soft);">
+                GALAXIA BLOX PROGRESSION IS STORED LOCALLY IN THIS BROWSER.
+              </div>
+            </div>
+          `;
+        } else if (view === "log") {
+          header.innerHTML = 'SESSION LOG // <span>EVENTS</span>';
+          body.innerHTML = "";
+          const logList = document.createElement("div");
+          logList.id = "logList";
+          logList.className = "log-list";
+          body.appendChild(logList);
+          updateLogPanel();
+        }
+      });
+    });
+
+    // --- View toggle (for future expansion) ---
+    document.querySelectorAll(".view-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".view-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+      });
+    });
+
+    // --- Init ---
+    loadState();
+    updateProfileUI();
+    renderGameGrid();
+    logEvent("SESSION", "GALAXIA BLOX NODE INITIALIZED.");
+  </script>
+</body>
+</html>
