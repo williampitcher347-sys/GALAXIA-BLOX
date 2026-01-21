@@ -1,202 +1,383 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Galaxia Blox — 2D Game Engine</title>
+console.log("Galaxia Blox — 2D Engine Loaded");
 
-  <style>
-    body {
-      margin: 0;
-      background: #05060a;
-      color: #e0e0e0;
-      font-family: "Segoe UI", Arial, sans-serif;
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
+/* ============================================================
+   BLOCK DEFINITIONS (100 BLOCKS)
+   ============================================================ */
+
+const BLOCKS = {
+  movement: [
+    "move 10 steps",
+    "move -10 steps",
+    "change x by 10",
+    "change x by -10",
+    "change y by 10",
+    "change y by -10",
+    "go to x:0 y:0",
+    "go to random position",
+    "point in direction 90",
+    "point in direction -90"
+  ],
+  looks: [
+    "say Hello",
+    "say Hello for 2s",
+    "say random message",
+    "hide sprite",
+    "show sprite",
+    "set size to 50%",
+    "set size to 100%",
+    "set size to 150%",
+    "change color",
+    "reset look"
+  ],
+  events: [
+    "when green flag clicked",
+    "when sprite clicked",
+    "when key space pressed",
+    "when key up pressed",
+    "when key down pressed",
+    "when key left pressed",
+    "when key right pressed",
+    "when map loaded",
+    "when variable changes",
+    "when custom event"
+  ],
+  control: [
+    "wait 1 second",
+    "wait 0.5 seconds",
+    "repeat 5",
+    "repeat 10",
+    "forever",
+    "if touching edge",
+    "if x > 100",
+    "if y > 100",
+    "stop script",
+    "stop all"
+  ],
+  sensing: [
+    "touching edge?",
+    "touching center?",
+    "mouse x",
+    "mouse y",
+    "key space pressed?",
+    "key up pressed?",
+    "key down pressed?",
+    "key left pressed?",
+    "key right pressed?",
+    "distance to center"
+  ],
+  operators: [
+    "pick random -10 to 10",
+    "add 1 + 1",
+    "subtract 5 - 3",
+    "multiply 2 * 3",
+    "divide 10 / 2",
+    "greater than",
+    "less than",
+    "equal to",
+    "and",
+    "or"
+  ],
+  variables: [
+    "set score to 0",
+    "change score by 1",
+    "change score by -1",
+    "set health to 100",
+    "change health by -10",
+    "show score",
+    "hide score",
+    "show health",
+    "hide health",
+    "reset variables"
+  ],
+  map: [
+    "scroll map right",
+    "scroll map left",
+    "scroll map up",
+    "scroll map down",
+    "set camera center",
+    "spawn enemy",
+    "spawn coin",
+    "set spawn point",
+    "load level 1",
+    "load level 2"
+  ],
+  custom: [
+    "define custom action",
+    "run custom action",
+    "emit custom event",
+    "on custom event",
+    "set custom flag",
+    "clear custom flag",
+    "toggle custom flag",
+    "log custom",
+    "custom block A",
+    "custom block B"
+  ],
+  advanced: [
+    "run debug log",
+    "freeze sprite",
+    "unfreeze sprite",
+    "set max speed",
+    "set friction",
+    "enable gravity",
+    "disable gravity",
+    "play sound",
+    "stop sound",
+    "reset engine"
+  ]
+};
+
+/* ============================================================
+   UI ELEMENTS
+   ============================================================ */
+
+const palette = document.getElementById("palette");
+const scriptArea = document.getElementById("scriptArea");
+const stageCanvas = document.getElementById("stage");
+const spriteInfo = document.getElementById("spriteInfo");
+const ctx = stageCanvas.getContext("2d");
+
+stageCanvas.width = 380;
+stageCanvas.height = 280;
+
+/* ============================================================
+   SPRITE STATE
+   ============================================================ */
+
+const sprite = {
+  x: 0,
+  y: 0,
+  size: 40,
+  visible: true,
+  color: "#0af"
+};
+
+let running = false;
+
+/* ============================================================
+   CATEGORY SWITCHING
+   ============================================================ */
+
+document.querySelectorAll(".cat-btn").forEach(btn => {
+  btn.onclick = () => loadCategory(btn.dataset.cat);
+});
+
+function loadCategory(cat) {
+  palette.innerHTML = "";
+  BLOCKS[cat].forEach(text => {
+    const block = document.createElement("div");
+    block.className = "block";
+    block.textContent = text;
+    block.draggable = true;
+    block.ondragstart = dragStart;
+    palette.appendChild(block);
+  });
+}
+
+loadCategory("movement");
+
+/* ============================================================
+   DRAGGING FROM PALETTE TO SCRIPT AREA
+   ============================================================ */
+
+let dragData = null;
+
+function dragStart(e) {
+  dragData = { text: e.target.textContent };
+}
+
+scriptArea.addEventListener("dragover", e => e.preventDefault());
+
+scriptArea.addEventListener("drop", e => {
+  if (!dragData) return;
+
+  const block = document.createElement("div");
+  block.className = "script-block";
+  block.textContent = dragData.text;
+
+  if (dragData.text.startsWith("when")) block.classList.add("event");
+  if (dragData.text.startsWith("repeat") || dragData.text.startsWith("forever")) block.classList.add("control");
+
+  block.style.left = e.offsetX + "px";
+  block.style.top = e.offsetY + "px";
+
+  makeDraggable(block);
+  scriptArea.appendChild(block);
+});
+
+/* ============================================================
+   DRAGGING + SNAPPING
+   ============================================================ */
+
+function makeDraggable(el) {
+  let offsetX, offsetY;
+
+  el.onmousedown = e => {
+    offsetX = e.offsetX;
+    offsetY = e.offsetY;
+
+    function move(ev) {
+      el.style.left = ev.pageX - scriptArea.offsetLeft - offsetX + "px";
+      el.style.top = ev.pageY - scriptArea.offsetTop - offsetY + "px";
     }
 
-    /* LEFT CATEGORY BAR */
-    #categories {
-      width: 150px;
-      background: linear-gradient(180deg, #0b0c10, #0a0a0f);
-      border-right: 2px solid #0af;
-      padding: 12px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    function up() {
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+      snapBlock(el);
     }
 
-    .cat-btn {
-      width: 100%;
-      padding: 10px;
-      background: #0af;
-      color: #000;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      border-radius: 6px;
-      font-size: 14px;
-      transition: 0.15s;
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+  };
+}
+
+function snapBlock(el) {
+  const blocks = Array.from(scriptArea.querySelectorAll(".script-block")).filter(b => b !== el);
+
+  let closest = null;
+  let closestDist = 9999;
+
+  const elRect = el.getBoundingClientRect();
+
+  blocks.forEach(b => {
+    const r = b.getBoundingClientRect();
+    const dx = elRect.left - r.left;
+    const dy = elRect.top - (r.bottom + 6);
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (Math.abs(dx) < 40 && Math.abs(dy) < 25 && dist < closestDist) {
+      closestDist = dist;
+      closest = b;
     }
+  });
 
-    .cat-btn:hover {
-      background: #08c;
-      transform: scale(1.05);
-    }
+  if (closest) {
+    const r = closest.getBoundingClientRect();
+    const parentR = scriptArea.getBoundingClientRect();
+    el.style.left = r.left - parentR.left + "px";
+    el.style.top = r.bottom - parentR.top + 6 + "px";
+  }
+}
 
-    /* BLOCK PALETTE */
-    #palette {
-      width: 280px;
-      background: #11131a;
-      border-right: 2px solid #0af;
-      padding: 12px;
-      overflow-y: auto;
-      box-sizing: border-box;
-    }
+/* ============================================================
+   STAGE RENDERING
+   ============================================================ */
 
-    .block {
-      padding: 10px 12px;
-      background: #ffbf00;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      cursor: grab;
-      user-select: none;
-      font-weight: bold;
-      font-size: 13px;
-      transition: 0.15s;
-      box-shadow: 0 0 8px rgba(255, 191, 0, 0.4);
-    }
+function drawStage() {
+  ctx.clearRect(0, 0, stageCanvas.width, stageCanvas.height);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, stageCanvas.width, stageCanvas.height);
 
-    .block:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 12px rgba(255, 191, 0, 0.7);
-    }
+  if (sprite.visible) {
+    ctx.fillStyle = sprite.color;
+    ctx.fillRect(
+      stageCanvas.width / 2 + sprite.x - sprite.size / 2,
+      stageCanvas.height / 2 - sprite.y - sprite.size / 2,
+      sprite.size,
+      sprite.size
+    );
+  }
 
-    /* SCRIPT AREA */
-    #scriptArea {
-      flex: 1;
-      background: #1a1c24;
-      position: relative;
-      overflow: hidden;
-    }
+  spriteInfo.textContent = `Sprite: x=${sprite.x} y=${sprite.y}`;
+}
 
-    .script-block {
-      position: absolute;
-      padding: 10px 12px;
-      background: #ffbf00;
-      border-radius: 8px;
-      cursor: grab;
-      user-select: none;
-      font-weight: bold;
-      font-size: 13px;
-      min-width: 160px;
-      box-shadow: 0 0 8px rgba(255, 191, 0, 0.4);
-      transition: 0.1s;
-    }
+drawStage();
 
-    .script-block.event {
-      background: #ff7f50;
-      box-shadow: 0 0 8px rgba(255, 127, 80, 0.5);
-    }
+/* ============================================================
+   SCRIPT EXECUTION
+   ============================================================ */
 
-    .script-block.control {
-      background: #ff6ad5;
-      box-shadow: 0 0 8px rgba(255, 106, 213, 0.5);
-    }
+const greenFlag = document.getElementById("greenFlag");
+const stopBtn = document.getElementById("stopBtn");
 
-    /* TOP BAR */
-    #topBar {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      z-index: 10;
-    }
+greenFlag.onclick = () => {
+  running = true;
+  runScripts();
+};
 
-    #greenFlag, #stopBtn {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      border: 2px solid #fff;
-      cursor: pointer;
-      transition: 0.15s;
-    }
+stopBtn.onclick = () => {
+  running = false;
+};
 
-    #greenFlag {
-      background: #00ff00;
-    }
+function getScriptBlocks() {
+  return Array.from(scriptArea.querySelectorAll(".script-block"))
+    .map(b => ({
+      el: b,
+      text: b.textContent,
+      top: parseInt(b.style.top || "0", 10)
+    }))
+    .sort((a, b) => a.top - b.top);
+}
 
-    #greenFlag:hover {
-      transform: scale(1.1);
-      background: #00dd00;
-    }
+async function runScripts() {
+  resetSprite();
 
-    #stopBtn {
-      background: #ff0000;
-    }
+  const blocks = getScriptBlocks();
+  const eventBlocks = blocks.filter(b => b.text.startsWith("when green flag clicked"));
 
-    #stopBtn:hover {
-      transform: scale(1.1);
-      background: #dd0000;
-    }
+  for (const ev of eventBlocks) {
+    await runFromBlock(ev, blocks);
+  }
+}
 
-    /* STAGE */
-    #stage {
-      width: 380px;
-      height: 280px;
-      background: #000;
-      border: 2px solid #0af;
-      position: absolute;
-      top: 60px;
-      right: 10px;
-      box-shadow: 0 0 12px rgba(0, 170, 255, 0.5);
-    }
+async function runFromBlock(startBlock, allBlocks) {
+  let index = allBlocks.indexOf(startBlock) + 1;
 
-    #spriteInfo {
-      position: absolute;
-      right: 10px;
-      top: 350px;
-      font-size: 13px;
-      background: rgba(0,0,0,0.6);
-      padding: 6px 10px;
-      border-radius: 6px;
-      border: 1px solid #0af;
-    }
-  </style>
-</head>
+  while (index < allBlocks.length && running) {
+    const block = allBlocks[index];
+    await executeBlock(block.text);
+    index++;
+  }
+}
 
-<body>
+function resetSprite() {
+  sprite.x = 0;
+  sprite.y = 0;
+  sprite.size = 40;
+  sprite.visible = true;
+  sprite.color = "#0af";
+  drawStage();
+}
 
-  <!-- LEFT CATEGORY BAR -->
-  <div id="categories">
-    <button class="cat-btn" data-cat="movement">Movement</button>
-    <button class="cat-btn" data-cat="looks">Looks</button>
-    <button class="cat-btn" data-cat="events">Events</button>
-    <button class="cat-btn" data-cat="control">Control</button>
-    <button class="cat-btn" data-cat="sensing">Sensing</button>
-    <button class="cat-btn" data-cat="operators">Operators</button>
-    <button class="cat-btn" data-cat="variables">Variables</button>
-    <button class="cat-btn" data-cat="map">Map</button>
-    <button class="cat-btn" data-cat="custom">Custom</button>
-    <button class="cat-btn" data-cat="advanced">Advanced</button>
-  </div>
+function sleep(ms) {
+  return new Promise(res => setTimeout(res, ms));
+}
 
-  <!-- BLOCK PALETTE -->
-  <div id="palette"></div>
+async function executeBlock(text) {
+  if (!running) return;
 
-  <!-- SCRIPT AREA + STAGE -->
-  <div id="scriptArea">
-    <div id="topBar">
-      <div id="greenFlag" title="Start"></div>
-      <div id="stopBtn" title="Stop"></div>
-    </div>
-    <canvas id="stage"></canvas>
-    <div id="spriteInfo">Sprite: x=0 y=0</div>
-  </div>
+  // MOVEMENT
+  if (text === "move 10 steps") sprite.x += 10;
+  if (text === "move -10 steps") sprite.x -= 10;
+  if (text === "change x by 10") sprite.x += 10;
+  if (text === "change x by -10") sprite.x -= 10;
+  if (text === "change y by 10") sprite.y += 10;
+  if (text === "change y by -10") sprite.y -= 10;
+  if (text === "go to x:0 y:0") sprite.x = sprite.y = 0;
+  if (text === "go to random position") {
+    sprite.x = Math.floor(Math.random() * 200 - 100);
+    sprite.y = Math.floor(Math.random() * 150 - 75);
+  }
 
-  <script src="script.js"></script>
-</body>
-</html>
+  // LOOKS
+  if (text === "hide sprite") sprite.visible = false;
+  if (text === "show sprite") sprite.visible = true;
+  if (text === "set size to 50%") sprite.size = 20;
+  if (text === "set size to 100%") sprite.size = 40;
+  if (text === "set size to 150%") sprite.size = 60;
+  if (text === "change color") sprite.color = "#" + Math.floor(Math.random() * 16777215).toString(16);
+  if (text === "reset look") {
+    sprite.size = 40;
+    sprite.color = "#0af";
+    sprite.visible = true;
+  }
+
+  // CONTROL
+  if (text === "wait 1 second") await sleep(1000);
+  if (text === "wait 0.5 seconds") await sleep(500);
+  if (text === "stop script") running = false;
+  if (text === "stop all") running = false;
+
+  drawStage();
+}
